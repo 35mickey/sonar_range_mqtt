@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)http://wiki.ai-thinker.com/esp8266/boards/gizwits -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" dir="ltr" class="js"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>ESP8266 机智云开发板 [安信可科技]</title>
+    <script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="shortcut icon" href="http://wiki.ai-thinker.com/lib/tpl/bootstrap3/images/favicon.ico">
+<link rel="apple-touch-icon" href="http://wiki.ai-thinker.com/lib/tpl/bootstrap3/images/apple-touch-icon.png">
+<meta name="generator" content="DokuWiki">
+<meta name="robots" content="index,follow">
+<meta name="keywords" content="esp8266,boards,gizwits">
+<style class="anchorjs"></style><link type="text/css" rel="stylesheet" href="./ESP8266 机智云开发板 [安信可科技]_files/materialdesignicons.min.css">
+<link type="text/css" rel="stylesheet" href="./ESP8266 机智云开发板 [安信可科技]_files/font-awesome.min.css">
+<link type="text/css" rel="stylesheet" href="./ESP8266 机智云开发板 [安信可科技]_files/bootstrap.min.css">
+<link rel="search" type="application/opensearchdescription+xml" href="http://wiki.ai-thinker.com/lib/exe/opensearch.php" title="安信可科技">
+<link rel="start" href="http://wiki.ai-thinker.com/">
+<link rel="contents" href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=index" title="网站地图">
+<link rel="manifest" href="http://wiki.ai-thinker.com/lib/exe/manifest.php">
+<link rel="alternate" type="application/rss+xml" title="最近更改" href="http://wiki.ai-thinker.com/feed.php">
+<link rel="alternate" type="application/rss+xml" title="当前命名空间" href="http://wiki.ai-thinker.com/feed.php?mode=list&amp;ns=esp8266:boards">
+<link rel="alternate" type="text/html" title="纯HTML" href="http://wiki.ai-thinker.com/_export/xhtml/esp8266/boards/gizwits">
+<link rel="canonical" href="http://wiki.ai-thinker.com/esp8266/boards/gizwits">
+<link rel="stylesheet" type="text/css" href="./ESP8266 机智云开发板 [安信可科技]_files/css.php">
+<!--[if gte IE 9]><!-->
+<script type="text/javascript">/*<![CDATA[*/var NS='esp8266:boards';var JSINFO = {"bootstrap3":{"mode":"show","toc":[],"config":{"collapsibleSections":0,"fixedTopNavbar":0,"showSemanticPopup":0,"sidebarOnNavbar":0,"tagsOnTop":1,"tocAffix":1,"tocCollapseOnScroll":1,"tocCollapsed":0,"tocLayout":"default","useAnchorJS":1,"useAlternativeToolbarIcons":1}},"id":"esp8266:boards:gizwits","namespace":"esp8266:boards","ACT":"show","useHeadingNavigation":1,"useHeadingContent":1};
+/*!]]>*/</script>
+<script type="text/javascript" charset="utf-8" src="./ESP8266 机智云开发板 [安信可科技]_files/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="./ESP8266 机智云开发板 [安信可科技]_files/jquery-migrate-3.0.0.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="./ESP8266 机智云开发板 [安信可科技]_files/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="./ESP8266 机智云开发板 [安信可科技]_files/js.php"></script><style id="iris-css">.iris-picker{display:block;position:relative}.iris-picker,.iris-picker *{-moz-box-sizing:content-box;-webkit-box-sizing:content-box;box-sizing:content-box}input+.iris-picker{margin-top:4px}.iris-error{background-color:#ffafaf}.iris-border{border-radius:3px;border:1px solid #aaa;width:200px;background-color:#fff}.iris-picker-inner{position:absolute;top:0;right:0;left:0;bottom:0}.iris-border .iris-picker-inner{top:10px;right:10px;left:10px;bottom:10px}.iris-picker .iris-square-inner{position:absolute;left:0;right:0;top:0;bottom:0}.iris-picker .iris-square,.iris-picker .iris-slider,.iris-picker .iris-square-inner,.iris-picker .iris-palette{border-radius:3px;box-shadow:inset 0 0 5px rgba(0,0,0,.4);height:100%;width:12.5%;float:left;margin-right:5%}.iris-picker .iris-square{width:76%;margin-right:10%;position:relative}.iris-picker .iris-square-inner{width:auto;margin:0}.iris-ie-9 .iris-square,.iris-ie-9 .iris-slider,.iris-ie-9 .iris-square-inner,.iris-ie-9 .iris-palette{box-shadow:none;border-radius:0}.iris-ie-9 .iris-square,.iris-ie-9 .iris-slider,.iris-ie-9 .iris-palette{outline:1px solid rgba(0,0,0,.1)}.iris-ie-lt9 .iris-square,.iris-ie-lt9 .iris-slider,.iris-ie-lt9 .iris-square-inner,.iris-ie-lt9 .iris-palette{outline:1px solid #aaa}.iris-ie-lt9 .iris-square .ui-slider-handle{outline:1px solid #aaa;background-color:#fff;-ms-filter:"alpha(Opacity=30)"}.iris-ie-lt9 .iris-square .iris-square-handle{background:0;border:3px solid #fff;-ms-filter:"alpha(Opacity=50)"}.iris-picker .iris-strip{margin-right:0;position:relative}.iris-picker .iris-strip .ui-slider-handle{position:absolute;background:0;margin:0;right:-3px;left:-3px;border:4px solid #aaa;border-width:4px 3px;width:auto;height:6px;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.2);opacity:.9;z-index:5;cursor:ns-resize}.iris-strip .ui-slider-handle:before{content:" ";position:absolute;left:-2px;right:-2px;top:-3px;bottom:-3px;border:2px solid #fff;border-radius:3px}.iris-picker .iris-slider-offset{position:absolute;top:11px;left:0;right:0;bottom:-3px;width:auto;height:auto;background:transparent;border:0;border-radius:0}.iris-picker .iris-square-handle{background:transparent;border:5px solid #aaa;border-radius:50%;border-color:rgba(128,128,128,.5);box-shadow:none;width:12px;height:12px;position:absolute;left:-10px;top:-10px;cursor:move;opacity:1;z-index:10}.iris-picker .ui-state-focus .iris-square-handle{opacity:.8}.iris-picker .iris-square-handle:hover{border-color:#999}.iris-picker .iris-square-value:focus .iris-square-handle{box-shadow:0 0 2px rgba(0,0,0,.75);opacity:.8}.iris-picker .iris-square-handle:hover::after{border-color:#fff}.iris-picker .iris-square-handle::after{position:absolute;bottom:-4px;right:-4px;left:-4px;top:-4px;border:3px solid #f9f9f9;border-color:rgba(255,255,255,.8);border-radius:50%;content:" "}.iris-picker .iris-square-value{width:8px;height:8px;position:absolute}.iris-ie-lt9 .iris-square-value,.iris-mozilla .iris-square-value{width:1px;height:1px}.iris-palette-container{position:absolute;bottom:0;left:0;margin:0;padding:0}.iris-border .iris-palette-container{left:10px;bottom:10px}.iris-picker .iris-palette{margin:0;cursor:pointer}.iris-square-handle,.ui-slider-handle{border:0;outline:0}</style>
+<script type="text/javascript" src="./ESP8266 机智云开发板 [安信可科技]_files/bootstrap.min.js"></script>
+<script type="text/javascript" src="./ESP8266 机智云开发板 [安信可科技]_files/anchor.min.js"></script>
+<script type="text/javascript" src="./ESP8266 机智云开发板 [安信可科技]_files/bootstrap3-typeahead.min.js"></script>
+<!--<![endif]-->
+<style type="text/css">@media screen { body { margin-top: 20px; }  #dw__toc.affix { top: 10px; position: fixed !important; }  #dw__toc .nav .nav .nav { display: none; } }</style>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script type="text/javascript" src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="default dokuwiki mode_show tpl_bootstrap3 dw-page-on-panel dw-fluid-container" data-page-id="esp8266:boards:gizwits"><div class="dokuwiki">
+    <header id="dokuwiki__header" class="dw-container dokuwiki container">
+    <!-- navbar -->
+<nav id="dw__navbar" class="navbar navbar-default" role="navigation">
+
+    <div class="dw-container container-fluid mx-5">
+
+        <div class="navbar-header">
+
+            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <a href="http://wiki.ai-thinker.com/welcome" accesskey="h" title="[H]" class="navbar-brand"><img src="./ESP8266 机智云开发板 [安信可科技]_files/logo.png" alt="安信可科技" class="pull-left" id="dw__logo" height="20"> <span id="dw__title">安信可科技</span></a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+
+            
+            
+            
+            <div class="navbar-right" id="dw__navbar_items">
+
+                
+<!-- navbar-searchform -->
+<form action="http://wiki.ai-thinker.com/esp8266/boards/gizwits" accept-charset="utf-8" class="navbar-form navbar-left search" id="dw__search" method="get" role="search">
+    <div class="input-group">
+        <input id="qsearch" autocomplete="off" type="search" placeholder="搜索" value="" accesskey="f" name="q" class="form-control" title="[F]">
+        <div class="input-group-btn">
+            <button class="btn btn-default" type="submit" title="搜索">
+                <i class="glyphicon glyphicon-search"></i>
+            </button>
+        </div>
+
+    </div>
+    <input type="hidden" name="do" value="search">
+</form>
+<!-- /navbar-searchform -->
+<!-- tools-menu -->
+<ul class="nav navbar-nav dw-action-icon" id="dw__tools">
+
+    
+    <li class="dropdown">
+
+        <a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits" class="dropdown-toggle" data-target="#" data-toggle="dropdown" title="" role="button" aria-haspopup="true" aria-expanded="false">
+            <i class="mdi mdi-wrench"></i> <span class="hidden-lg hidden-md hidden-sm">工具</span> <span class="caret"></span>
+        </a>
+
+        <ul class="dropdown-menu tools" role="menu">
+        
+            <li class="dropdown-header">
+                <i class="mdi mdi-account"></i> 用户工具            </li>
+
+            <li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=login&amp;sectok=" title="登录" rel="nofollow" class="menuitem login"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 17.25V14H3v-4h7V6.75L15.25 12 10 17.25M8 2h9a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-4h2v4h9V4H8v4H6V4a2 2 0 0 1 2-2z"></path></svg><span>登录</span></a></li>
+                        <li class="divider" role="separator"></li>
+            
+        
+            <li class="dropdown-header">
+                <i class="mdi mdi-toolbox"></i> 站点工具            </li>
+
+            <li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=recent" title="最近更改 [r]" rel="nofollow" accesskey="r" class="menuitem recent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15 13h1.5v2.82l2.44 1.41-.75 1.3L15 16.69V13m4-5H5v11h4.67c-.43-.91-.67-1.93-.67-3a7 7 0 0 1 7-7c1.07 0 2.09.24 3 .67V8M5 21a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2h1V1h2v2h8V1h2v2h1a2 2 0 0 1 2 2v6.1c1.24 1.26 2 2.99 2 4.9a7 7 0 0 1-7 7c-1.91 0-3.64-.76-4.9-2H5m11-9.85A4.85 4.85 0 0 0 11.15 16c0 2.68 2.17 4.85 4.85 4.85A4.85 4.85 0 0 0 20.85 16c0-2.68-2.17-4.85-4.85-4.85z"></path></svg><span>最近更改</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=media&amp;ns=esp8266%3Aboards" title="媒体管理器" rel="nofollow" class="menuitem media"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7 15l4.5-6 3.5 4.5 2.5-3L21 15m1-11h-8l-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2M2 6H0v14a2 2 0 0 0 2 2h18v-2H2V6z"></path></svg><span>媒体管理器</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=index" title="网站地图 [x]" rel="nofollow" accesskey="x" class="menuitem index"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M3 3h6v4H3V3m12 7h6v4h-6v-4m0 7h6v4h-6v-4m-2-4H7v5h6v2H5V9h2v2h6v2z"></path></svg><span>网站地图</span></a></li>
+                        <li class="divider" role="separator"></li>
+            
+        
+            <li class="dropdown-header">
+                <i class="mdi mdi-file-document-outline"></i> 页面工具            </li>
+
+            <li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=edit" title="显示源文件 [v]" rel="nofollow" accesskey="v" class="menuitem source"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13 9h5.5L13 3.5V9M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m.12 13.5l3.74 3.74 1.42-1.41-2.33-2.33 2.33-2.33-1.42-1.41-3.74 3.74m11.16 0l-3.74-3.74-1.42 1.41 2.33 2.33-2.33 2.33 1.42 1.41 3.74-3.74z"></path></svg><span>显示源文件</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=revisions" title="修订记录 [o]" rel="nofollow" class="menuitem revs"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M11 7v5.11l4.71 2.79.79-1.28-4-2.37V7m0-5C8.97 2 5.91 3.92 4.27 6.77L2 4.5V11h6.5L5.75 8.25C6.96 5.73 9.5 4 12.5 4a7.5 7.5 0 0 1 7.5 7.5 7.5 7.5 0 0 1-7.5 7.5c-3.27 0-6.03-2.09-7.06-5h-2.1c1.1 4.03 4.77 7 9.16 7 5.24 0 9.5-4.25 9.5-9.5A9.5 9.5 0 0 0 12.5 2z"></path></svg><span>修订记录</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=backlink" title="反向链接" rel="nofollow" class="menuitem backlink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10.59 13.41c.41.39.41 1.03 0 1.42-.39.39-1.03.39-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0 5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a2.982 2.982 0 0 0 0-4.24 2.982 2.982 0 0 0-4.24 0l-3.53 3.53a2.982 2.982 0 0 0 0 4.24m2.82-4.24c.39-.39 1.03-.39 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0 5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.43l-.47.47a2.982 2.982 0 0 0 0 4.24 2.982 2.982 0 0 0 4.24 0l3.53-3.53a2.982 2.982 0 0 0 0-4.24.973.973 0 0 1 0-1.42z"></path></svg><span>反向链接</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#dokuwiki__top" title="回到顶部 [t]" rel="nofollow" class="menuitem top"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path></svg><span>回到顶部</span></a></li>
+            
+                </ul>
+    </li>
+
+    
+</ul>
+<!-- /tools-menu -->
+
+                <ul class="nav navbar-nav">
+
+                    
+                    
+                                        <li>
+                        <span class="dw__actions dw-action-icon">
+                        <a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=login&amp;sectok=" title="登录" rel="nofollow" class="menuitem login btn btn-default navbar-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10 17.25V14H3v-4h7V6.75L15.25 12 10 17.25M8 2h9a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-4h2v4h9V4H8v4H6V4a2 2 0 0 1 2-2z"></path></svg><span class=""> 登录</span></a>                        </span>
+                    </li>
+                    
+                </ul>
+
+                
+                
+
+            </div>
+
+        </div>
+    </div>
+</nav>
+<!-- navbar -->
+    </header>
+
+    <a name="dokuwiki__top" id="dokuwiki__top"></a>
+
+    <main role="main" class="dw-container pb-5 dokuwiki container">
+
+        <div id="dokuwiki__pageheader">
+
+            
+            <!-- breadcrumbs -->
+<nav id="dw__breadcrumbs" class="small">
+
+    <hr>
+
+    
+        <div class="dw__breadcrumbs hidden-print">
+        <ol class="breadcrumb"><li>您的足迹</li><li class="active"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits" title="esp8266:boards:gizwits">ESP8266 机智云开发板</a></li></ol>    </div>
+    
+    <hr>
+
+</nav>
+<!-- /breadcrumbs -->
+
+            <p class="text-right">
+                <span class="pageId ml-1 label label-primary">esp8266:boards:gizwits</span>            </p>
+
+            <div id="dw__msgarea" class="small">
+                            </div>
+
+        </div>
+
+        <div class="row">
+
+            
+            <article id="dokuwiki__content" class="col-sm-12 col-md-12 " itemscope="" itemtype="http://schema.org/Article" itemref="dw__license">
+
+                
+<!-- page-tools -->
+<nav id="dw__pagetools" class="hidden-print">
+    <div class="tools panel panel-default pull-right affix-top">
+        <ul class="nav nav-stacked nav-pills text-muted">
+            <li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=edit" title="显示源文件 [v]" rel="nofollow" accesskey="v" class="menuitem source"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13 9h5.5L13 3.5V9M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m.12 13.5l3.74 3.74 1.42-1.41-2.33-2.33 2.33-2.33-1.42-1.41-3.74 3.74m11.16 0l-3.74-3.74-1.42 1.41 2.33 2.33-2.33 2.33 1.42 1.41 3.74-3.74z"></path></svg><span>显示源文件</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=revisions" title="修订记录 [o]" rel="nofollow" accesskey="o" class="menuitem revs"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M11 7v5.11l4.71 2.79.79-1.28-4-2.37V7m0-5C8.97 2 5.91 3.92 4.27 6.77L2 4.5V11h6.5L5.75 8.25C6.96 5.73 9.5 4 12.5 4a7.5 7.5 0 0 1 7.5 7.5 7.5 7.5 0 0 1-7.5 7.5c-3.27 0-6.03-2.09-7.06-5h-2.1c1.1 4.03 4.77 7 9.16 7 5.24 0 9.5-4.25 9.5-9.5A9.5 9.5 0 0 0 12.5 2z"></path></svg><span>修订记录</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits?do=backlink" title="反向链接" rel="nofollow" class="menuitem backlink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10.59 13.41c.41.39.41 1.03 0 1.42-.39.39-1.03.39-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0 5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a2.982 2.982 0 0 0 0-4.24 2.982 2.982 0 0 0-4.24 0l-3.53 3.53a2.982 2.982 0 0 0 0 4.24m2.82-4.24c.39-.39 1.03-.39 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0 5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.43l-.47.47a2.982 2.982 0 0 0 0 4.24 2.982 2.982 0 0 0 4.24 0l3.53-3.53a2.982 2.982 0 0 0 0-4.24.973.973 0 0 1 0-1.42z"></path></svg><span>反向链接</span></a></li><li class="action"><a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#dokuwiki__top" title="回到顶部 [t]" rel="nofollow" accesskey="t" class="menuitem top"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path></svg><span>回到顶部</span></a></li>        </ul>
+    </div>
+</nav>
+<!-- /page-tools -->
+
+                <div class="panel panel-default px-3 py-2" itemprop="articleBody">
+                    <div class="page panel-body">
+
+                        <div class="dw-content-page "><!-- content --><div class="dw-content"><h1 class="sectionedit1 page-header" id="esp8266_机智云开发板">ESP8266 机智云开发板<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#esp8266_%E6%9C%BA%E6%99%BA%E4%BA%91%E5%BC%80%E5%8F%91%E6%9D%BF" aria-label="Anchor link for: esp8266_机智云开发板" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h1>
+<div class="level1">
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/esp8266_gizwits_board0.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:esp8266_gizwits_board0.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/esp8266_gizwits_board0.png" class="media img-responsive" title="esp8266_gizwits_board" alt="esp8266_gizwits_board" width="300"></a>
+</p>
+
+</div>
+
+<h2 class="sectionedit2 page-header" id="一_前言">一、前言<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E4%B8%80_%E5%89%8D%E8%A8%80" aria-label="Anchor link for: 一_前言" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+<div class="level2">
+
+<p>
+这是一个支持云端的智能硬件开发套件，史上最简单最具性价比的物联网开发板，不需要你懂网络、TCP/IP、HTP、MQTT底层复杂的知识，只要你会C语言，即可用安信可的机智云SDK快速实现二次开发。
+</p>
+
+<p>
+这个DEMO板可以用手机流量控制板载的RGB七彩灯，手机端APP，可以通过光敏电阻显示环境亮度。代码只要少作修改半个小时即可做出一款属于你自己的远程控制设备，系统免费生成APP（安卓、IOS），开放SDK，你只需要做下APP端UI界面即可研发成一个成品。
+</p>
+
+</div>
+
+<h2 class="sectionedit3 page-header" id="二_硬件简介">二、硬件简介<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E4%BA%8C_%E7%A1%AC%E4%BB%B6%E7%AE%80%E4%BB%8B" aria-label="Anchor link for: 二_硬件简介" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+<div class="level2">
+
+<p>
+原理图：<a href="http://wiki.ai-thinker.com/_media/esp8266/boards/gizwits/sch.7z" class="media mediafile mf_7z" title="esp8266:boards:gizwits:sch.7z (67.2 KB)">sch.7z</a>
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/esp8266_gizwits_board1.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:esp8266_gizwits_board1.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/esp8266_gizwits_board1.png" class="media img-responsive" title="esp8266_gizwits_board_hard" alt="esp8266_gizwits_board_hard"></a>
+</p>
+
+<p>
+手机app下载：<a href="http://dev.gizwits.com/zh-cn/developer/resource/demo_app?protoc=WIFI" class="urlextern" title="http://dev.gizwits.com/zh-cn/developer/resource/demo_app?protoc=WIFI" rel="nofollow">http://dev.gizwits.com/zh-cn/developer/resource/demo_app?protoc=WIFI</a>  (第一次点击创建账号，第二次点击可以直达下载APP页面)
+</p>
+
+</div>
+
+<h2 class="sectionedit4 page-header" id="三_简单说明">三、简单说明<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E4%B8%89_%E7%AE%80%E5%8D%95%E8%AF%B4%E6%98%8E" aria-label="Anchor link for: 三_简单说明" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+<div class="level2">
+
+</div>
+
+<h3 class="sectionedit5 page-header" id="出厂固件">1.出厂固件<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E5%87%BA%E5%8E%82%E5%9B%BA%E4%BB%B6" aria-label="Anchor link for: 出厂固件" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+<p>
+用户刚买回的机智云开发板不要烧录固件，出厂固件为演示固件，不开源，不提供再次下载。烧录其他固件后，将无法烧录回来。
+</p>
+
+<p>
+所以请先按照一下出厂固件教程演示，完成操作后，可以参考机智云固件教程，再刷AT固件或者另外提供的机智云开源固件。
+</p>
+
+</div>
+
+<h3 class="sectionedit6 page-header" id="机智云固件">2.机智云固件<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E6%9C%BA%E6%99%BA%E4%BA%91%E5%9B%BA%E4%BB%B6" aria-label="Anchor link for: 机智云固件" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+<p>
+该教程提供了机智云固件的源码，以及源码修改方式。
+</p>
+
+<p>
+相关信息请参考机智云固件教程 。
+</p>
+
+</div>
+
+<h2 class="sectionedit7 page-header" id="四_操作教程">四、操作教程<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E5%9B%9B_%E6%93%8D%E4%BD%9C%E6%95%99%E7%A8%8B" aria-label="Anchor link for: 四_操作教程" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+<div class="level2">
+
+</div>
+
+<h3 class="sectionedit8 page-header" id="出厂固件操作教程">1.出厂固件操作教程<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E5%87%BA%E5%8E%82%E5%9B%BA%E4%BB%B6%E6%93%8D%E4%BD%9C%E6%95%99%E7%A8%8B" aria-label="Anchor link for: 出厂固件操作教程" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+</div>
+
+<h3 class="sectionedit9 page-header" id="基本状态">基本状态：<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E5%9F%BA%E6%9C%AC%E7%8A%B6%E6%80%81" aria-label="Anchor link for: 基本状态" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+<p>
+工作波特率：115200
+</p>
+
+<p>
+LED状态：RBG等色彩渐变
+</p>
+
+<p>
+描述：该固件工作波特率为115200，上电后RBG灯色彩渐变不会停止。该固件上电会自动进入配网模式，不需要按任何按键使模块进入配网模式。打开机智云APP按以下步骤操作即可。
+</p>
+
+</div>
+
+<h3 class="sectionedit10 page-header" id="智能配网">智能配网<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E6%99%BA%E8%83%BD%E9%85%8D%E7%BD%91" aria-label="Anchor link for: 智能配网" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+<p>
+1.打开机智云APP添加设备
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/giz-02.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:giz-02.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/giz-02.png" class="media img-responsive" alt="" width="300"></a>
+</p>
+
+<p>
+2.手机连上路由器，输入WiFi密码，选择乐鑫（ESP8266模组型号），勾选已完成上述步骤，点击下一步，等待配网，
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/giz-03.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:giz-03.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/giz-03.png" class="media img-responsive" alt="" width="300"></a>
+</p>
+
+<p>
+3.点击设备进行绑定，即可控制。
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/giz.jpg?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:giz.jpg"><img src="./ESP8266 机智云开发板 [安信可科技]_files/giz.jpg" class="media img-responsive" alt="" width="300"></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit11 page-header" id="机智云固件操作教程">2.机智云固件操作教程<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E6%9C%BA%E6%99%BA%E4%BA%91%E5%9B%BA%E4%BB%B6%E6%93%8D%E4%BD%9C%E6%95%99%E7%A8%8B" aria-label="Anchor link for: 机智云固件操作教程" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+</div>
+
+<h3 class="sectionedit12 page-header" id="基本状态1">基本状态：<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E5%9F%BA%E6%9C%AC%E7%8A%B6%E6%80%811" aria-label="Anchor link for: 基本状态1" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+<p>
+工作波特率：9600
+</p>
+
+<p>
+RBG灯状态：RBG灯上电是为熄灭状态，长按user按键进入配网模式，RBG变绿后可以执行配网步骤。
+</p>
+
+<p>
+描述:该固件工作波特率为9600，RBG灯上电时为熄灭状态，长按USER按键进入配网模式，RBG灯变绿后可以执行配网步骤
+</p>
+<pre class="code">   首先要完成固件的下载，请按如下步骤操作。
+   机智云教程：http://club.gizwits.com/forum.php?mod=viewthread&amp;tid=5176&amp;highlight=8266
+   进入配网模式的串口输出信息标志 SC_STATUS_FIND_CHANNEL。在串口工具中收到这条数据，标志进入配网模式。</pre>
+
+</div>
+
+<h3 class="sectionedit13 page-header" id="烧录下载">烧录下载<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E7%83%A7%E5%BD%95%E4%B8%8B%E8%BD%BD" aria-label="Anchor link for: 烧录下载" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+<p>
+烧录固件源码:<a href="http://wiki.ai-thinker.com/_media/esp8266/boards/xiaoesmartled.rar" class="media mediafile mf_rar" title="esp8266:boards:xiaoesmartled.rar (8.2 MB)">xiaoesmartled.rar</a>
+</p>
+
+<p>
+<strong>SDK固件烧写地址说明（路径:xiaoEsmartLED\xiaoEsmartLED\bin\upgrade）:</strong>
+</p>
+<div class="table-responsive"><table class="inline table table-striped table-condensed">
+	<thead>
+	<tr class="row0">
+		<th class="col0 leftalign">文件名                     </th><th class="col1 leftalign">地址   </th>
+	</tr>
+	</thead>
+	<tbody><tr class="row1">
+		<td class="col0 leftalign">boot_v1.6.bin              </td><td class="col1">0x00000</td>
+	</tr>
+	<tr class="row2">
+		<td class="col0 leftalign">user1.4096.new.2.bin       </td><td class="col1">0x01000</td>
+	</tr>
+	<tr class="row3">
+		<td class="col0 leftalign">blank.bin                  </td><td class="col1">0x3fe000</td>
+	</tr>
+	<tr class="row4">
+		<td class="col0 leftalign">esp_init_data_default.bin  </td><td class="col1">0x3fc000</td>
+	</tr>
+</tbody></table></div>
+
+<p>
+—–
+注意！！下载user1.4096.new.2.bin的固件和出厂固件是一样的，但是该固件的波特率是9600，该源码可以根据机智云教程修改<a href="http://club.gizwits.com/forum.php?mod=viewthread&amp;tid=5176&amp;highlight=8266" class="urlextern" title="http://club.gizwits.com/forum.php?mod=viewthread&amp;tid=5176&amp;highlight=8266" rel="nofollow">http://club.gizwits.com/forum.php?mod=viewthread&amp;tid=5176&amp;highlight=8266</a>
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/kuj7_v_fz33o_jdk7v_y_4.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:kuj7_v_fz33o_jdk7v_y_4.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/kuj7_v_fz33o_jdk7v_y_4.png" class="media img-responsive" alt=""></a>
+</p>
+
+<p>
+烧写方法如下，<code>先按住FLASH不放，再按一下RST键</code>，测试板既可以进入UART烧写状态，然后点击烧录软件<code>START</code>进行烧写，直到烧写完成。如果未进入下载模式，则重复该步骤。
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/esp8266_gizwits_board2.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:esp8266_gizwits_board2.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/esp8266_gizwits_board2.png" class="media img-responsive" title="esp8266_gizwits_board_hard" alt="esp8266_gizwits_board_hard" width="300"></a>
+</p>
+
+</div>
+
+<h3 class="sectionedit15 page-header" id="智能配网1">智能配网<a class="anchorjs-link " href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#%E6%99%BA%E8%83%BD%E9%85%8D%E7%BD%911" aria-label="Anchor link for: 智能配网1" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+<div class="level3">
+
+<p>
+1,长按上板<code>USER按键</code>,待RGB变绿色，则松开按键，打开机智云APP添加设备，
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/giz-02.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:giz-02.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/giz-02.png" class="media img-responsive" alt="" width="300"></a>
+</p>
+
+<p>
+2,手机连上路由器，输入WiFi密码，选择乐鑫（ESP8266模组型号），勾选已完成上述步骤，点击下一步，等待配网，
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/giz-03.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:giz-03.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/giz-03.png" class="media img-responsive" alt="" width="300"></a>
+</p>
+
+<p>
+3,点击设备进行绑定，即可控制。
+</p>
+
+<p>
+<a href="http://wiki.ai-thinker.com/_detail/esp8266/boards/gizwits/giz-04.png?id=esp8266%3Aboards%3Agizwits" class="media" title="esp8266:boards:gizwits:giz-04.png"><img src="./ESP8266 机智云开发板 [安信可科技]_files/giz-04.png" class="media img-responsive" alt="" width="300"></a>
+</p>
+
+</div>
+</div><!-- /content --></div>
+                    </div>
+                </div>
+
+                <div class="small text-right">
+
+                                        <span class="docInfo">
+                        <ul class="list-inline"><li><i class="mdi mdi-file-document-outline text-muted"></i> <span title="esp8266/boards/gizwits.txt">esp8266/boards/gizwits.txt</span></li><li><i class="mdi mdi-calendar text-muted"></i> 最后更改: <span title="2017/12/25 04:09">2017/12/25 04:09</span></li><li class="text-muted">由 127.0.0.1</li></ul>                    </span>
+                    
+                    
+                </div>
+
+            </article>
+
+            
+        </div>
+
+    </main>
+
+    <footer id="dw__footer" class="dw-container pt-5 dokuwiki container">
+        <!-- footer -->
+<div class="navbar navbar-default">
+    <div class="dw-container container-fluid mx-5">
+
+        <div class="small navbar-text">
+
+                        <div class="footer-dw-title">
+                <div class="media">
+                    <div class="media-left">
+                        <img src="./ESP8266 机智云开发板 [安信可科技]_files/logo.png" alt="安信可科技" class="media-object" style="width:32px">
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading">安信可科技</h4>
+                        <p>
+                                                    </p>
+                    </div>
+                </div>
+                <p>&nbsp;</p>
+            </div>
+            
+            
+            <div class="footer-license row">
+
+                <div class="col-sm-6">
+                                        <p>
+                        <a href="http://creativecommons.org/licenses/by/4.0/" title="CC Attribution 4.0 International" target="" itemscope="" itemtype="http://schema.org/CreativeWork" itemprop="license" rel="license" class="license navbar-link"><img src="./ESP8266 机智云开发板 [安信可科技]_files/cc.png" width="24" height="24" alt="cc"> <img src="./ESP8266 机智云开发板 [安信可科技]_files/by.png" width="24" height="24" alt="by"> </a>                    </p>
+                    <p class="small">
+                        除额外注明的地方外，本维基上的内容按下列许可协议发布：<br><a href="http://creativecommons.org/licenses/by/4.0/" title="CC Attribution 4.0 International" target="" itemscope="" itemtype="http://schema.org/CreativeWork" itemprop="license" rel="license" class="license navbar-link">CC Attribution 4.0 International</a>                    </p>
+                                    </div>
+
+                <div class="col-sm-6">
+                    <!-- badges -->
+<ul id="dw__badges" class="list-inline pull-right hidden-print">
+
+    <li>
+        <a href="https://www.dokuwiki.org/template:bootstrap3" title="Bootstrap template for DokuWiki" target="" class="navbar-link">
+            <img src="./ESP8266 机智云开发板 [安信可科技]_files/bootstrap.png" width="20" alt="Bootstrap template for DokuWiki">
+        </a>
+    </li>
+
+    <li>
+        <a href="https://www.php.net/" title="Powered by PHP" target="" class="navbar-link">
+            <img src="./ESP8266 机智云开发板 [安信可科技]_files/php.png" width="20" alt="Powered by PHP">
+        </a>
+    </li>
+
+    <li>
+        <a href="http://validator.w3.org/check/referer" title="Valid HTML5" target="" class="navbar-link">
+            <img src="./ESP8266 机智云开发板 [安信可科技]_files/html5.png" width="20" alt="Valid HTML5">
+        </a>
+    </li>
+
+    <li>
+        <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3" title="Valid CSS" target="" class="navbar-link">
+            <img src="./ESP8266 机智云开发板 [安信可科技]_files/css3.png" width="20" alt="Valid CSS">
+        </a>
+    </li>
+
+    <li>
+        <a href="https://www.dokuwiki.org/" title="Driven by DokuWiki" target="" class="navbar-link">
+            <img src="./ESP8266 机智云开发板 [安信可科技]_files/logo.png" width="20" alt="Driven by DokuWiki">
+        </a>
+    </li>
+
+</ul>
+<!-- /badges -->
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<!-- /footer -->
+    </footer>
+
+    <a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#dokuwiki__top" class="back-to-top hidden-print btn btn-default btn-sm" title="跳至内容" accesskey="t" style="display: none;"><i class="mdi mdi-chevron-up"></i></a>
+
+    <div id="screen__mode">        <span class="visible-xs-block"></span>
+        <span class="visible-sm-block"></span>
+        <span class="visible-md-block"></span>
+        <span class="visible-lg-block"></span>
+    </div>
+
+    <img src="./ESP8266 机智云开发板 [安信可科技]_files/indexer.php" width="2" height="1" alt="">
+</div>
+
+
+
+<div class="sogoutip" style="z-index: 2147483645; visibility: hidden; display: none;"></div><div class="sogoubottom" id="sougou_bottom" style="display: none;"></div><div id="ext_stophi" style="z-index: 2147483647;"><div class="extnoticebg"></div><div class="extnotice"><h2>关闭提示 <a href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#" title="关闭提示" id="closenotice" class="closenotice">关闭</a></h2><p id="sogouconfirmtxt"></p>  <a id="sogouconfirm" href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#" class="extconfirm">确 认</a> <a id="sogoucancel" href="http://wiki.ai-thinker.com/esp8266/boards/gizwits#" class="extconfirm">取 消</a></div></div><div id="ext_overlay" class="ext_overlayBG" style="display: none; z-index: 2147483646;"></div><iframe class="sogou_sugg_feedbackquan" frameborder="0" scrolling="no" src="./ESP8266 机智云开发板 [安信可科技]_files/yun6.html" style="background: transparent; border: none; display: none; height: 84px; width: 100%; z-index: 2147483645;"></iframe></body></html>

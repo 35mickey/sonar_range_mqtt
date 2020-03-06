@@ -1,3 +1,4 @@
+
 # Picoweb web pico-framework for Pycopy, https://github.com/pfalcon/pycopy
 # Copyright (c) 2014-2020 Paul Sokolovsky
 # SPDX-License-Identifier: MIT
@@ -106,6 +107,8 @@ class http_req(object):
     def read_form_data(self, reader):
         size = int(self.headers["Content-Length"])
         data = reader.read(size)
+        print(data)
+        data = data.decode()
         form = parse_qs(data)
         self.form = form
 
@@ -143,11 +146,12 @@ class http_server(object):
         headers = {}
         while True:
             l = reader.readline()
+            l = l.decode()
+            print('line: %s' % l)
             if l == "\r\n" or len(l) == 0:
                 # print('EOF in parse_headers()')
                 headers["error"] = "NoneError"
                 return headers
-            # print('line: %s' % l)
             try:
                 k, v = l.split(":", 1)
                 headers[k] = v.strip()
@@ -165,19 +169,11 @@ class http_server(object):
         try:
             conn, addr = self.server.accept()  # 接受一个连接，conn是一个新的socket对象
             # print("in %s" % str(addr))
-            conn.settimeout(100)
-            request = conn.recv(1024)  # 从套接字接收1024字节的数据
-            if len(request) == 0:
-                return
-            request = request.decode()
-            # print(request)
-            conn_fd = StringIO(request)
+            conn.settimeout(200)
+            conn_fd = conn
         except OSError:
             print('accept time out')
             return
-        #except BlockingIOError as e:
-        #    print('No data error')
-        #    return
 
         close = True
         req = None
@@ -185,7 +181,7 @@ class http_server(object):
             request_line = conn_fd.readline()
 
             # 判断空HTTP请求头
-            if request_line == "":
+            if request_line == b"":
                 print('EOF on request start')
                 conn.close()
                 return
@@ -193,10 +189,8 @@ class http_server(object):
             req = http_req()
             # TODO: bytes vs str
             # 分离method, path, proto
-            # request_line = request_line.decode()
+            request_line = request_line.decode()
             method, path, proto = request_line.split()
-            # if self.debug >= 0:
-            #     self.log.info('%.3f %s %s "%s %s"' % (utime.time(), req, writer, method, path))
             # 分离URL中的path和参数
             path = path.split("?", 1)
             qs = ""
@@ -210,12 +204,13 @@ class http_server(object):
             req.method = method
             req.path = path
             req.qs = qs
+            print(req)
             req.parse_qs()
             if req.method == 'POST':
                 req.read_form_data(conn_fd)
 
-#            print("================")
-#            print(req, (method, path, req.form, proto, req.headers))
+            print("================")
+            print(req, (method, path, req.form, proto, req.headers))
 
             # 调用回调函数，根据http请求参数生成html的body
             if self.cb == None:
@@ -265,6 +260,7 @@ if __name__ == '__main__':
               </form>'''
             return body, '200'
         elif req.method == 'POST':
+            print(req.form)
             username = req.form['username']
             password = req.form['password']
             if username=='admin' and password=='123456':
@@ -308,6 +304,8 @@ if __name__ == '__main__':
     while True:
         web.wait_request(1000)
         pass
+
+
 
 
 

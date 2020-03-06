@@ -43,3 +43,4 @@ ap_if.config(essid='ESP-AP', authmode=0) # set the ESSID of the access point
 print('ap_if config:', ap_if.ifconfig())
 
 
+

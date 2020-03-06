@@ -15,15 +15,13 @@
 # from .utils import parse_qs
 
 import sys
-import time
-import re
-import socket
-from io import StringIO
+import utime as time
+import ure as re
+import usocket as socket
 
 from utils import parse_qs
 
 SEND_BUFSZ = 128
-
 
 # 用于判断一个文件名
 # in  : 文件名
@@ -56,7 +54,7 @@ def sendstream(writer, f):
 # in  : sock句柄，dict变量
 # out : 无
 def jsonify(writer, dict):
-    import json
+    import ujson as json
     start_response(writer, "application/json")
     writer.send(json.dumps(dict))
 
@@ -96,19 +94,20 @@ def http_error(writer, status):
 class http_req(object):
 
     def __init__(self):
-        self.headers = None
-        self.reader = None
-        self.method = None
-        self.path = None
-        self.qs = None
-        self.form = None
+        self.headers  = None
+        self.reader   = None
+        self.method   = None
+        self.path     = None
+        self.qs       = None
+        self.form     = None
 
     # 这一句应该是解析POST的数据用的
     def read_form_data(self, reader):
         size = int(self.headers["Content-Length"])
         data = reader.read(size)
-        print(data)
+        # print(data)
         data = data.decode()
+        # print(data)
         form = parse_qs(data)
         self.form = form
 
@@ -138,7 +137,6 @@ class http_server(object):
         self.server.listen(self.client_num)                                 # 监听套接字
         print("服务器地址:%s:%d" % (self.ip, self.port))
 
-
     # 解析HTTP请求的协议头
     # in  : sock句柄
     # out : header的参数表
@@ -147,7 +145,6 @@ class http_server(object):
         while True:
             l = reader.readline()
             l = l.decode()
-            print('line: %s' % l)
             if l == "\r\n" or len(l) == 0:
                 # print('EOF in parse_headers()')
                 headers["error"] = "NoneError"
@@ -156,7 +153,7 @@ class http_server(object):
                 k, v = l.split(":", 1)
                 headers[k] = v.strip()
             except ValueError:
-                headers["error"] = "ValueError"
+                headers["error"] = "parse_headers ValueError"
         return headers
 
     # 等待http请求，一旦受到请求，解析出参数，调用回调函数处理参数
@@ -172,10 +169,9 @@ class http_server(object):
             conn.settimeout(200)
             conn_fd = conn
         except OSError:
-            print('accept time out')
+            # print('accept time out')
             return
 
-        close = True
         req = None
         try:
             request_line = conn_fd.readline()
@@ -204,13 +200,12 @@ class http_server(object):
             req.method = method
             req.path = path
             req.qs = qs
-            print(req)
             req.parse_qs()
             if req.method == 'POST':
                 req.read_form_data(conn_fd)
 
-            print("================")
-            print(req, (method, path, req.form, proto, req.headers))
+            # print("================")
+            # print(req, (method, path, req.form, proto, req.headers))
 
             # 调用回调函数，根据http请求参数生成html的body
             if self.cb == None:
@@ -231,6 +226,7 @@ class http_server(object):
             return
 
         except OSError:
+            conn.close()
             print('http error')
             return
 
@@ -242,6 +238,7 @@ class http_server(object):
         # setblocking(False) 等价于 settimeout(0)
         # setblocking(True)  等价于 settimeout(None)
         return self.wait_request(timeout=0)
+
 
 if __name__ == '__main__':
 
@@ -304,6 +301,9 @@ if __name__ == '__main__':
     while True:
         web.wait_request(1000)
         pass
+
+
+
 
 
 

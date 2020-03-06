@@ -1,10 +1,12 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 index_html = '''<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8"> 
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="3;url=/?">
 <title>ESP8266 主页</title> 
 </head>
 <body>

@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -11,7 +12,7 @@ ssid_html = '''<!DOCTYPE html>
 <h1>ESP8266 Wifi设置</h1>
 <form action="/" method="get"><input type="submit" value="主页"></form><br>
 <form action="ssid" method="get"><input type="submit" value="刷新"></form><br>
-<form action="ssid" method="get">
+<form action="ssid" method="post">
 WIFI名称: <select name="ssid">
 {{ ssid_datalist }}
 </select><br>

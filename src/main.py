@@ -8,6 +8,7 @@ from machine import Pin
 import network
 import ujson as json
 import usocket as socket
+from umqtt.simple import MQTTClient
 
 # 以下是所有的全局变量
 # sta_if = None
@@ -181,28 +182,49 @@ def application(req):
     # 执行对应的函数，如果没有就执行默认的函数
     return path_dict.get(req.path, default_html)(req)
 
+# MQTT订阅的回调函数，收到服务器消息后会调用这个函数
+# in  : 主题，消息
+# out : 无
+def mqtt_sub_cb(topic, msg):
+    print(topic, msg)
 
 if __name__ == '__main__':
 
-    # sta_if = network.WLAN(network.STA_IF)
-    ap_if = network.WLAN(network.AP_IF)
+    sta_if = network.WLAN(network.STA_IF)
+    # ap_if = network.WLAN(network.AP_IF)
     
+    # LED 灯初始化
     led_blue    = Pin(13, Pin.OUT, value=1)    # create output pin on GPIO0
     led_red     = Pin(15, Pin.OUT, value=1)    # create output pin on GPIO0
     led_green   = Pin(12, Pin.OUT, value=1)    # create output pin on GPIO0
     l = [1,0,0]
 
-    http_server_ip = ap_if.ifconfig()[0]
+    # http服务器初始化
+    http_server_ip = sta_if.ifconfig()[0]
     # print(http_server_ip)
     web = http_server(port=80, ip=http_server_ip, client_num=5, cb=application)
+    
+    # MQTT客户端初始
+    c = MQTTClient("umqtt_client", "test.mosquitto.org") #建立一个MQTT客户端
+    c.set_callback(mqtt_sub_cb) #设置回调函数
+    c.connect() #建立连接
+    c.subscribe(b"ledctl") #监控ledctl这个通道，接收控制命令
+    
+    # 超声波测距模块初始化
+    pass
+    
+    # 循环事件检测
     while True:
         web.wait_request(300)
+        
+        c.check_msg()
         
         led_blue.value(l[0])
         led_red.value(l[1])
         led_green.value(l[2])
         time.sleep_ms(100)
         l = l[1:] + l[:1]
+
 
 
 

@@ -15,6 +15,7 @@
 # from .utils import parse_qs
 
 import sys
+import gc
 import utime as time
 import ure as re
 import usocket as socket
@@ -166,7 +167,7 @@ class http_server(object):
         try:
             conn, addr = self.server.accept()  # 接受一个连接，conn是一个新的socket对象
             # print("in %s" % str(addr))
-            conn.settimeout(200)
+            # conn.settimeout(200)
             conn_fd = conn
         except OSError:
             # print('accept time out')
@@ -180,14 +181,18 @@ class http_server(object):
             if request_line == b"":
                 print('EOF on request start')
                 conn.close()
+                gc.collect()
                 return
 
             req = http_req()
             # TODO: bytes vs str
             # 分离method, path, proto
             request_line = request_line.decode()
-            method, path, proto = request_line.split()
+            print(request_line)
+            method, path, proto = request_line.split(' ')
             # 分离URL中的path和参数
+            if path[-1] != "?":
+                path = path + "?"
             path = path.split("?", 1)
             qs = ""
             
@@ -213,6 +218,7 @@ class http_server(object):
                 start_response(conn, status="500")
                 conn.send("500\r\n".encode('utf-8'))
                 conn.close()
+                gc.collect()
                 return
             body, res_status = self.cb(req)
             print(res_status)
@@ -222,12 +228,13 @@ class http_server(object):
             conn.send(body.encode('utf-8'))
             conn.send("\r\n".encode('utf-8'))  # 发送结束
             conn.close()
-
+            gc.collect()
             return
 
         except OSError:
             conn.close()
             print('http error')
+            gc.collect()
             return
 
     # 非阻塞等待http，配合外部阻塞使用
@@ -301,6 +308,7 @@ if __name__ == '__main__':
     while True:
         web.wait_request(1000)
         pass
+
 
 
 

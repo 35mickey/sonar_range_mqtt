@@ -69,9 +69,9 @@ if __name__ == '__main__':
     #建立一个MQTT客户端
     mqtt_client = MQTTClient(client_id=mqtt_id, server=mqtt_host, port=mqtt_port, user=mqtt_user, password=mqtt_pwd)
     mqtt_client.set_callback(mqtt_sub_cb) #设置回调函数
-    # mqtt_client.connect()                 #建立连接
-    # mqtt_client.subscribe(b"test")        #测试字符串
-    # mqtt_client.subscribe(b"leds")        #接收led控制命令
+    mqtt_client.connect()                 #建立连接
+    mqtt_client.subscribe(b"test")        #测试字符串
+    mqtt_client.subscribe(b"leds")        #接收led控制命令
 
 #-----------------------------------------------------------------------------
 
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             web_pages.wdt.feed()
 
         # 检查有无来自MQTT服务器的消息
-        # mqtt_client.check_msg()
+        mqtt_client.check_msg()
 
 #-----------------------------------------------------------------------------
 
@@ -136,7 +136,7 @@ if __name__ == '__main__':
         if (time.ticks_ms() - last_light_timestamp) > (3 * 1000):
             adc_value = light_adc.read()
             print('ADC: %d' % adc_value)
-            # mqtt_client.publish(topic='light', msg=('%d' % adc_value))
+            mqtt_client.publish(topic='light', msg=('%d' % adc_value))
             led_red.value(not led_red.value())
             last_light_timestamp = time.ticks_ms()
             gc.collect()

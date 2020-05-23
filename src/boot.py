@@ -1,25 +1,25 @@
-
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # This file is executed on every boot (including wake-boot from deepsleep)
 #import esp
 #esp.osdebug(None)
-#import uos, machine
+import uos, machine
 #uos.dupterm(None, 1) # disable REPL on UART(0)
 import gc
 #import webrepl
 #webrepl.start()
 gc.collect()
 
-print('\nBoot codes start...')
-
 import network
 import utime as time
 import ujson as json
 
 sta_connect_timeout = 15 # 15 seconds
+
+print('\nBoot codes start...')
+
+#-----------------------------------------------------------------------------
 
 # Connect to the wifi
 
@@ -37,7 +37,6 @@ with open('config.json', 'r') as fd:
         wifi_name = 'Chinastar-4F'
         wifi_password = '86968188'
 
-
 # Try to connect to this ssid
 # print('Connecting to network "%s"...' % wifi_name)
 sta_if = network.WLAN(network.STA_IF)
@@ -45,14 +44,16 @@ if not sta_if.isconnected():
     print('Connecting to network "%s"...' % wifi_name)
     sta_if.active(True)
     sta_if.connect(wifi_name, wifi_password)
-    
+
     last_timestamp = time.ticks_ms()
     while not sta_if.isconnected():
         if (time.ticks_ms() - last_timestamp) > (sta_connect_timeout * 1000):
             print("Connect to %s timeout" % wifi_name)
             break
- 
+
 print('sta_if config:', sta_if.ifconfig())
+
+#-----------------------------------------------------------------------------
 
 # Set the ESP8266 AP wifi and password. The IP should always be 192.168.4.1
 ap_if = network.WLAN(network.AP_IF) # create access-point interface
@@ -66,13 +67,11 @@ ap_if.active(True)                  # activate the interface
 ap_if.config(essid='ESP-AP', authmode=0) # set the ESSID of the access point
 print('ap_if config:', ap_if.ifconfig())
 
+#-----------------------------------------------------------------------------
+
 print('Boot codes End...\n')
 
+# Set to high performance mode
+machine.freq(160000000)
+
 gc.collect()
-
-
-
-
-
-
-

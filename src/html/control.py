@@ -11,10 +11,8 @@ control_html = '''<!DOCTYPE html>
 <form action="control" method="post">
 <!-- input type="hidden" name="wdt_enable" value="false" --> <!-- 此处为隐藏域，POST时会显示，不能用!!! -->
 看门狗: <input type="checkbox" name="wdt_enable" value="true" {{ wdt_check_status }}>(此配置重启生效)<br><br>
-<!-- input type="hidden" name="blue_led" value="false" --> <!-- 此处为隐藏域，POST时会显示，不能用!!! -->
-蓝灯  : <input type="checkbox" name="blue_led" value="true"><br><br>
-<!-- input type="hidden" name="green_led" value="false" --> <!-- 此处为隐藏域，POST时会显示，不能用!!! -->
-绿灯  : <input type="checkbox" name="green_led" value="true"><br><br>
+<!-- input type="hidden" name="relay" value="false" --> <!-- 此处为隐藏域，POST时会显示，不能用!!! -->
+继电器  : <input type="checkbox" name="relay" value="true"  {{ relay_check_status }}><br><br>
 <input type="submit" value="提交"></form>
 </body>
 </html>

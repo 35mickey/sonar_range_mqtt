@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from machine import Pin
+import machine
 from utime import sleep_us,ticks_us
 
 class sr04():

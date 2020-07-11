@@ -9,7 +9,9 @@ import usocket as socket
 from web_server import http_req
 
 # 以下是所有的全局变量
-wdt = None
+wdt                 = None
+relay_status        = None
+distance_to_ground  = None
 
 #=============================================================================
 
@@ -17,6 +19,10 @@ wdt = None
 def home_html(req):
     from html.index import index_html
     body = index_html
+    
+    # 声明全局变量
+    global wdt
+    global distance_to_ground
 
     wifi_status = ''
     internet_status = ''
@@ -69,7 +75,11 @@ def home_html(req):
         body = body.replace('{{ wdt_check_status }}', '关闭')
     else:
         body = body.replace('{{ wdt_check_status }}', '开启')
-
+    # 返回看门狗的状态
+    if distance_to_ground == None: # None means distance_to_ground is not invalid
+        body = body.replace('{{ distance_to_ground }}', '无效')
+    else:
+        body = body.replace('{{ distance_to_ground }}', str(distance_to_ground))
 
     return body, '200'
 
@@ -153,14 +163,16 @@ def wifi_html(req):
 # 设置和状态控制页,用于设置看门狗开启或关闭，以及各种灯和继电器的状态
 def control_html(req):
 
+    # 声明全局变量
+    global wdt
+    global relay_status
+
     # 如果是POST，进行灯和继电器控制，并将看门狗设置写入文件
     if req.method == 'POST':
         if 'wdt_enable' in req.form.keys():
-            print(req.form['wdt_enable'])
-        if 'blue_led' in req.form.keys():
-            print(req.form['blue_led'])
-        if 'green_led' in req.form.keys():
-            print(req.form['green_led'])
+            print('wdt_enable:' + req.form['wdt_enable'])
+        if 'relay' in req.form.keys():
+            print('relay:' + req.form['relay'])
 
         # 把看门狗设置写入config.json, Micropython只能先读后写
         config_table = {}
@@ -177,14 +189,20 @@ def control_html(req):
                     config_table['wdt_enable'] = req.form['wdt_enable']
                 else:
                     config_table['wdt_enable'] = "false"
-                print(config_table)
+                # print(config_table)
                 json.dump(config_table, fd)
             except KeyError:
                 # 找不到键名，按照python的语法，应该没这个分支
                 print('Write wdt config to config.json error')
 
-        # TODO: 控制灯和继电器的状态
-        pass
+        # 控制继电器的状态
+        if 'relay' in req.form.keys():
+            if req.form['relay'] == "true":
+                relay_status = True
+            else:
+                relay_status = None
+        else:
+            relay_status = None
 
         # 处理完提交的数据后，直接正常返回页面
         pass
@@ -201,8 +219,11 @@ def control_html(req):
     else:
         body = body.replace('{{ wdt_check_status }}', 'checked="true"')
 
-    # TODO: 返回灯和继电器的状态
-    pass
+    # 返回继电器的状态
+    if relay_status == None: # None means realy is not enable
+        body = body.replace('{{ relay_check_status }}', '')
+    else:
+        body = body.replace('{{ relay_check_status }}', 'checked="true"')
 
     return body, '200'
 

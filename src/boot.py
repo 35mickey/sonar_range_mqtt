@@ -36,6 +36,9 @@ with open('config.json', 'r') as fd:
     except ValueError:
         wifi_name = 'Chinastar-4F'
         wifi_password = '86968188'
+    except OSError:
+        wifi_name = 'Chinastar-4F'
+        wifi_password = '86968188'
 
 # Try to connect to this ssid
 # print('Connecting to network "%s"...' % wifi_name)

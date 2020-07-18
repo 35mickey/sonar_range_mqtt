@@ -12,7 +12,6 @@ import ujson as json
 from machine import Pin
 from machine import ADC
 from machine import WDT
-from machine import RTC
 import gc
 import network
 from web_server import http_server
@@ -25,13 +24,16 @@ from global_var import g_var
 #=============================================================================
 # Definitions
 #=============================================================================
- 
+
 # MQTT服务器的配置状态
 MQTT_HOST = "hairdresser.cloudmqtt.com"
 MQTT_PORT = 16889
 MQTT_ID   = "esp8266"
 MQTT_USER = "wugui"
 MQTT_PWD  = "wugui"
+
+# time.time()得到的时间戳，是个什么鬼东西
+UTC_OFFSET = 946656000
 
 #=============================================================================
 # Static Variables
@@ -100,9 +102,9 @@ if __name__ == '__main__':
 
     sta_if = network.WLAN(network.STA_IF)
     ap_if = network.WLAN(network.AP_IF)
-    
+
 #-----------------------------------------------------------------------------
-    
+
     # 将json文件中的配置导入local_config变量
     with open('config.json', 'r') as fd:
         try:
@@ -111,7 +113,7 @@ if __name__ == '__main__':
             g_var.local_config = g_var.defaul_local_config
         except OSError:
             g_var.local_config = g_var.defaul_local_config
-            
+
 #-----------------------------------------------------------------------------
 
     # LED 灯初始化
@@ -133,6 +135,10 @@ if __name__ == '__main__':
     print(http_server_ip)
     web = http_server(port=80, ip=http_server_ip, client_num=5, cb=application)
 
+    # 同步网络时间
+    sync_ntp()
+    sync_ntp()
+
 #-----------------------------------------------------------------------------
 
     # MQTT客户端初始
@@ -140,7 +146,7 @@ if __name__ == '__main__':
     mqtt_client = MQTTClient(client_id=MQTT_ID, server=MQTT_HOST, port=MQTT_PORT, user=MQTT_USER, password=MQTT_PWD)
     mqtt_client.set_callback(mqtt_sub_cb)           #设置回调函数
     mqtt_client.connect()                           #建立连接
-    
+
     # 订阅主题
     mqtt_client.subscribe(b"test_sub")              #测试字符串
     mqtt_client.subscribe(b"relay_status")          #接收继电器状态
@@ -172,6 +178,7 @@ if __name__ == '__main__':
     last_mqtt_report_timestamp      = time.ticks_ms()
     last_led_flash_timestamp        = time.ticks_ms()
     last_measure_sonar_timestamp    = time.ticks_ms()
+    last_time_str_update_timestamp  = time.ticks_ms()
     # last_light_timestamp          = time.ticks_ms()
 
     # 循环事件检测
@@ -192,9 +199,29 @@ if __name__ == '__main__':
 
         # 检查有无来自MQTT服务器的消息
         mqtt_client.check_msg()
-        
+
 #-----------------------------------------------------------------------------
-        
+
+        # 检测到继电器状态变化
+        if g_var.relay_status == True:
+            relay_port.value(True)
+        else:
+            relay_port.value(False)
+
+
+#-----------------------------------------------------------------------------
+
+        # 1秒一次，把当前时间转为时间字符串
+        if (time.ticks_ms() - last_time_str_update_timestamp) > (1000):
+            tmp = time.localtime()
+            g_var.utc_timestamp = time.time() + UTC_OFFSET
+            g_var.localtime_str = "%04d-%02d-%02d %02d:%02d:%02d" % (tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5])
+            print(g_var.localtime_str)
+            print(g_var.utc_timestamp)
+            last_time_str_update_timestamp = time.ticks_ms()
+
+#-----------------------------------------------------------------------------
+
         # 1秒一次，使用超声波测量距离
         if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
             # len, valid = sonar.getlen();
@@ -206,14 +233,6 @@ if __name__ == '__main__':
                 g_var.original_distance = 999
                 print('Invalid distance.\n')
             last_measure_sonar_timestamp = time.ticks_ms()
-            
-#-----------------------------------------------------------------------------
-
-        # 检测到继电器状态变化
-        if g_var.relay_status == True:
-            relay_port.value(True)
-        else:
-            relay_port.value(False)
 
 #-----------------------------------------------------------------------------
 

@@ -70,19 +70,20 @@ def home_html(req):
         g_var.current_ssid = 'JSON KeyError'
 
     # 替换变量
+    body = body.replace('{{ localtime_str }}', g_var.localtime_str)
     body = body.replace('{{ wifi_status }}', g_var.wifi_status)
     body = body.replace('{{ internet_status }}', g_var.internet_status)
     body = body.replace('{{ current_ssid }}', g_var.current_ssid)
     # 返回看门狗的状态
     if g_var.wdt == None: # None means wdt is not enable
-        body = body.replace('{{ wdt_check_status }}', '关闭')
+        body = body.replace('{{ wdt_status }}', '关闭')
     else:
-        body = body.replace('{{ wdt_check_status }}', '开启')
+        body = body.replace('{{ wdt_status }}', '开启')
     # 返回距离状态
     if g_var.distance_valid == False:
-        body = body.replace('{{ distance_to_ground }}', '无效')
+        body = body.replace('{{ original_distance }}', '无效')
     else:
-        body = body.replace('{{ distance_to_ground }}', str(g_var.original_distance))
+        body = body.replace('{{ original_distance }}', str(g_var.original_distance))
 
     return body, '200'
 
@@ -222,9 +223,9 @@ def control_html(req):
 
     # 返回看门狗的状态
     if g_var.local_config['wdt_enable'] == "true":
-        body = body.replace('{{ wdt_check_status }}', 'checked="true"')
+        body = body.replace('{{ wdt_status }}', 'checked="true"')
     else:
-        body = body.replace('{{ wdt_check_status }}', '')
+        body = body.replace('{{ wdt_status }}', '')
 
     # 返回继电器的状态
     if g_var.relay_status == True:

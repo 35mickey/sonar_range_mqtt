@@ -34,6 +34,8 @@ class g_var():
     wifi_status         = ''
     internet_status     = ''
     current_ssid        = ''
+    localtime_str       = ''
+    utc_timestamp       = 0
 
     # 所有外发的状态字典变量
     main_status = {

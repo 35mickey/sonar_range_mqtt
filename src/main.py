@@ -179,7 +179,6 @@ if __name__ == '__main__':
 
     # 同步网络时间
     sync_ntp()
-    sync_ntp()
 
 #-----------------------------------------------------------------------------
 
@@ -225,6 +224,7 @@ if __name__ == '__main__':
     last_led_flash_timestamp        = time.ticks_ms()
     last_measure_sonar_timestamp    = time.ticks_ms()
     last_time_str_update_timestamp  = time.ticks_ms()
+    last_sync_ntp_timestamp         = time.ticks_ms()
     # last_light_timestamp          = time.ticks_ms()
 
     # 循环事件检测
@@ -270,6 +270,13 @@ if __name__ == '__main__':
             relay_port.value(True)
         else:
             relay_port.value(False)
+            
+#-----------------------------------------------------------------------------
+
+        # 10分钟一次，和ntp服务器同步时间
+        if (time.ticks_ms() - last_sync_ntp_timestamp) > (10*60000):
+            sync_ntp()
+            last_sync_ntp_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 
@@ -331,7 +338,7 @@ if __name__ == '__main__':
 
 #-----------------------------------------------------------------------------
 
-        # 一秒钟闪一下，指示灯
+        # 1秒一次，闪一下指示灯
         if (time.ticks_ms() - last_led_flash_timestamp) > (500):
             led_flash.value(not led_flash.value())
             last_led_flash_timestamp = time.ticks_ms()

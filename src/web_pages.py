@@ -7,11 +7,7 @@ import ujson as json
 import usocket as socket
 #from machine import WDT
 from web_server import http_req
-
-# 以下是所有的全局变量
-wdt                 = None
-relay_status        = None
-distance_to_ground  = None
+from global_var import g_var
 
 #=============================================================================
 
@@ -21,12 +17,12 @@ def home_html(req):
     body = index_html
     
     # 声明全局变量
-    global wdt
-    global distance_to_ground
+    # global wdt
+    # global distance_to_ground
 
-    wifi_status = ''
-    internet_status = ''
-    current_ssid = ''
+    # wifi_status = ''
+    # internet_status = ''
+    # current_ssid = ''
 
     sta_if = network.WLAN(network.STA_IF)
 
@@ -45,41 +41,48 @@ def home_html(req):
       4:"WIFI连接失败",
       5:"WIFI已连接",
     }
-    wifi_status = status_dict[sta_if.status()]
+    g_var.wifi_status = status_dict[sta_if.status()]
 
     # 用连接百度的方式，检测外网状态
     try:
         s = socket.socket()
         s.connect(socket.getaddrinfo('www.baidu.com', 80, 0, socket.SOCK_STREAM)[0][-1])
-        internet_status = '已连接外网'
+        g_var.internet_status = '已连接外网'
+        s.close()
     except OSError:
-        internet_status = '连接外网失败'
+        s.close()
+        g_var.internet_status = '连接外网失败'
 
     # 从config.json文件中获取SSID，因为没有这种API
-    config_table = {}
-    with open('config.json', 'r') as fd:
-        try:
-            config_table = json.load(fd)
-            current_ssid = config_table['wifi_ssid']
-        except KeyError:
-            current_ssid = 'JSON KeyError'
-        except ValueError:
-            current_ssid = 'JSON ValueError'
+    # config_table = {}
+    # with open('config.json', 'r') as fd:
+        # try:
+            # config_table = json.load(fd)
+            # g_var.main_status['current_ssid'] = config_table['wifi_ssid']
+        # except KeyError:
+            # g_var.main_status['current_ssid'] = 'JSON KeyError'
+        # except ValueError:
+            # g_var.main_status['current_ssid'] = 'JSON ValueError'
+            
+    try:
+        g_var.current_ssid = g_var.local_config['wifi_ssid']
+    except KeyError:
+        g_var.current_ssid = 'JSON KeyError'
 
     # 替换变量
-    body = body.replace('{{ wifi_status }}', wifi_status)
-    body = body.replace('{{ internet_status }}', internet_status)
-    body = body.replace('{{ current_ssid }}', current_ssid)
+    body = body.replace('{{ wifi_status }}', g_var.wifi_status)
+    body = body.replace('{{ internet_status }}', g_var.internet_status)
+    body = body.replace('{{ current_ssid }}', g_var.current_ssid)
     # 返回看门狗的状态
-    if wdt == None: # None means wdt is not enable
+    if g_var.wdt == None: # None means wdt is not enable
         body = body.replace('{{ wdt_check_status }}', '关闭')
     else:
         body = body.replace('{{ wdt_check_status }}', '开启')
-    # 返回看门狗的状态
-    if distance_to_ground == None: # None means distance_to_ground is not invalid
+    # 返回距离状态
+    if g_var.distance_valid == False:
         body = body.replace('{{ distance_to_ground }}', '无效')
     else:
-        body = body.replace('{{ distance_to_ground }}', str(distance_to_ground))
+        body = body.replace('{{ distance_to_ground }}', str(g_var.original_distance))
 
     return body, '200'
 
@@ -94,21 +97,34 @@ def wifi_html(req):
         print(req.form['pwd'])
 
         # 把信息写入config.json, Micropython只能先读后写
-        config_table = {}
-        with open('config.json', 'r') as fd:
-            try:
-                config_table = json.load(fd)
-            except ValueError:
-                # json 解析出错
-                print('Load config.json error')
+        # config_table = {}
+        # with open('config.json', 'r') as fd:
+            # try:
+                # config_table = json.load(fd)
+            # except ValueError:
+                # # json 解析出错
+                # print('Load config.json error')
           
-        with open('config.json', 'w') as fd:
+        # with open('config.json', 'w') as fd:
+            # try:
+                # config_table['wifi_ssid'] = req.form['ssid']
+                # config_table['wifi_pwd'] = req.form['pwd']
+                # wifi_name = config_table['wifi_ssid']
+                # wifi_password = config_table['wifi_pwd']
+                # json.dump(config_table, fd)
+            # except KeyError:
+                # # 找不到键名，按照python的语法，应该没这个分支
+                # print('Write ssid config.json error')
+                # wifi_name = 'Chinastar-4F'
+                # wifi_password = '86968188'
+                
+        with open('config.json', 'w') as fd: 
             try:
-                config_table['wifi_ssid'] = req.form['ssid']
-                config_table['wifi_pwd'] = req.form['pwd']
-                wifi_name = config_table['wifi_ssid']
-                wifi_password = config_table['wifi_pwd']
-                json.dump(config_table, fd)
+                g_var.local_config['wifi_ssid']     = req.form['ssid']
+                g_var.local_config['wifi_pwd']      = req.form['pwd']
+                wifi_name       = g_var.local_config['wifi_ssid']
+                wifi_password   = g_var.local_config['wifi_pwd']
+                json.dump(g_var.local_config, fd)
             except KeyError:
                 # 找不到键名，按照python的语法，应该没这个分支
                 print('Write ssid config.json error')
@@ -163,10 +179,6 @@ def wifi_html(req):
 # 设置和状态控制页,用于设置看门狗开启或关闭，以及各种灯和继电器的状态
 def control_html(req):
 
-    # 声明全局变量
-    global wdt
-    global relay_status
-
     # 如果是POST，进行灯和继电器控制，并将看门狗设置写入文件
     if req.method == 'POST':
         if 'wdt_enable' in req.form.keys():
@@ -174,23 +186,18 @@ def control_html(req):
         if 'relay' in req.form.keys():
             print('relay:' + req.form['relay'])
 
-        # 把看门狗设置写入config.json, Micropython只能先读后写
-        config_table = {}
-        with open('config.json', 'r') as fd:
-            try:
-                config_table = json.load(fd)
-            except ValueError:
-                # json 解析出错
-                print('Load config.json error')
+        # 把看门狗设置写入config.json
         
         with open('config.json', 'w') as fd:
             try:
                 if 'wdt_enable' in req.form.keys():
-                    config_table['wdt_enable'] = req.form['wdt_enable']
+                    g_var.local_config['wdt_enable'] = req.form['wdt_enable']
+                    # g_var.wdt = True  # 此处只做配置，等待下次重启生效
                 else:
-                    config_table['wdt_enable'] = "false"
+                    g_var.local_config['wdt_enable'] = "false"
+                    # g_var.wdt = None
                 # print(config_table)
-                json.dump(config_table, fd)
+                json.dump(g_var.local_config, fd)
             except KeyError:
                 # 找不到键名，按照python的语法，应该没这个分支
                 print('Write wdt config to config.json error')
@@ -198,11 +205,11 @@ def control_html(req):
         # 控制继电器的状态
         if 'relay' in req.form.keys():
             if req.form['relay'] == "true":
-                relay_status = True
+                g_var.relay_status = True
             else:
-                relay_status = None
+                g_var.relay_status = False
         else:
-            relay_status = None
+            g_var.relay_status = False
 
         # 处理完提交的数据后，直接正常返回页面
         pass
@@ -214,16 +221,16 @@ def control_html(req):
     body = control_html
 
     # 返回看门狗的状态
-    if wdt == None: # None means wdt is not enable
-        body = body.replace('{{ wdt_check_status }}', '')
-    else:
+    if g_var.local_config['wdt_enable'] == "true":
         body = body.replace('{{ wdt_check_status }}', 'checked="true"')
+    else:
+        body = body.replace('{{ wdt_check_status }}', '')
 
     # 返回继电器的状态
-    if relay_status == None: # None means realy is not enable
-        body = body.replace('{{ relay_check_status }}', '')
-    else:
+    if g_var.relay_status == True:
         body = body.replace('{{ relay_check_status }}', 'checked="true"')
+    else:
+        body = body.replace('{{ relay_check_status }}', '')
 
     return body, '200'
 
@@ -282,6 +289,4 @@ path_dict = {
 def application(req):
     # 执行对应的函数，如果没有就执行默认的函数
     return path_dict.get(req.path, default_html)(req)
-
-
 

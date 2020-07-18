@@ -13,7 +13,7 @@ class sr04():
 
     def trig_up(self):
         self.trig.value(1)
-        # sleep_us(1) # 经过示波器测试，没有延时约10us, 有延时至少50us
+        sleep_us(1) # 经过示波器测试，没有延时约10us, 有延时至少50us
         self.trig.value(0)
 
     def getlen(self):

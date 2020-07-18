@@ -18,18 +18,33 @@
 #=============================================================================
 # Global Variables
 #=============================================================================
+
 class g_var():
 
     # 看门狗类型，有效时是object，无效时是None
     wdt                 = None
-    
+
     # 继电器状态，开启是True，关闭是False
     relay_status        = False
-    
+
     # 距离长度cm和状态
     original_distance   = 999
     distance_valid      = False
-    
+
+    # 定时开启/关闭继电器使能,及定时时间点
+    # 当使能为True时，对比时和分，如果一致，不停开启或关闭继电器
+    # 大概能一致1分钟左右
+    relay_timing_on_enable  = False
+    relay_timing_on_time    = {
+    'hh':00,
+    'mm':00
+    }
+    relay_timing_off_enable = False
+    relay_timing_off_time   = {
+    'hh':00,
+    'mm':00
+    }
+
     # 一些状态，嗯。。。应该不用解释
     wifi_status         = ''
     internet_status     = ''
@@ -39,9 +54,13 @@ class g_var():
 
     # 所有外发的状态字典变量
     main_status = {
-    'delay_on_time':          10001,
-    'wdt_enabled':           False,
-    'relay_status':         False,
+    'localtime_str':            "",
+    'relay_timing_on_enable':   False,
+    'relay_timing_on_time':     "",
+    'relay_timing_on_enable':   False,
+    'relay_timing_on_time':     "",
+    'relay_status':             False,
+    'wdt_enabled':              False,
     'distance':0,
     'wifi_status':'',
     'internet_status':'',
@@ -53,17 +72,16 @@ class g_var():
     'wdt_config':None,
     'relay_config':None
     }
-    
+
     # 本地配置
     local_config = {}
-    
+
     # 缺省配置
     default_local_config = {
-    "wifi_pwd": "11111", 
-    "wdt_enable": "false", 
+    "wifi_pwd": "11111",
+    "wdt_enable": "false",
     "wifi_ssid": "AAAAA"
     }
-
 
 #=============================================================================
 # Function Definitions

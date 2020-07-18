@@ -32,7 +32,13 @@ MQTT_ID   = "esp8266"
 MQTT_USER = "wugui"
 MQTT_PWD  = "wugui"
 
-# time.time()得到的时间戳，是个什么鬼东西
+# MQTT_HOST = "dongchenyu163.site"
+# MQTT_PORT = 1883
+# MQTT_ID   = "esp8266"
+# MQTT_USER = "zhuzhong"
+# MQTT_PWD  = "159357258"
+
+# time.time()得到的时间戳，是个什么鬼东西，加偏移才能用
 UTC_OFFSET = 946656000
 
 #=============================================================================
@@ -45,16 +51,20 @@ UTC_OFFSET = 946656000
 
 # MQTT 订阅主题列表
 mqtt_sub_topics = [
-    "test_sub",
+    "relay_timing_on_enable",
+    "relay_timing_on_time",
+    "relay_timing_off_enable",
+    "relay_timing_off_time",
     "relay_status"
 ]
 
 # MQTT 发布主题列表
 mqtt_pub_topics = [
-    "test_pub",
-    "alive_status",
-    "relay_status",
-    "distance_to_ground"
+    "relay_timing_on_enable",
+    "relay_timing_on_time",
+    "relay_timing_off_enable",
+    "relay_timing_off_time",
+    "relay_status"
 ]
 
 #=============================================================================
@@ -83,6 +93,38 @@ def mqtt_sub_cb(topic, msg):
             g_var.relay_status = True
         else:
             g_var.relay_status = False
+            
+    # 继电器定时开启状态
+    if topic == "relay_timing_on_enable":
+        if msg == 'true':
+            g_var.relay_timing_on_enable = True
+        else:
+            g_var.relay_timing_on_enable = False
+    if topic == "relay_timing_on_time":
+        try:
+            on_time = float(msg) #正常应该在0.0 -> 23.9
+            if on_time >= 0 and on_time <= 23.9:
+                g_var.relay_timing_on_time["hh"] = int(on_time)
+                g_var.relay_timing_on_time["mm"] = int((on_time - g_var.relay_timing_on_time["hh"]) * 60)
+                print(g_var.relay_timing_on_time)
+        except ValueError:
+            pass
+            
+    # 继电器定时关闭状态
+    if topic == "relay_timing_off_enable":
+        if msg == 'true':
+            g_var.relay_timing_off_enable = True
+        else:
+            g_var.relay_timing_off_enable = False
+    if topic == "relay_timing_off_time":
+        try:
+            off_time = float(msg) #正常应该在0.0 -> 23.9
+            if off_time >= 0 and off_time <= 23.9:
+                g_var.relay_timing_off_time["hh"] = int(off_time)
+                g_var.relay_timing_off_time["mm"] = int((off_time - g_var.relay_timing_off_time["hh"]) * 60)
+                print(g_var.relay_timing_off_time)
+        except ValueError:
+            pass
 
     # if topic == 'leds':
         # if msg == 'blue on':
@@ -131,7 +173,7 @@ if __name__ == '__main__':
     # light_adc = ADC(0)                          # create ADC object on ADC pin
 
     # http服务器初始化
-    http_server_ip = sta_if.ifconfig()[0]
+    http_server_ip = ap_if.ifconfig()[0]
     print(http_server_ip)
     web = http_server(port=80, ip=http_server_ip, client_num=5, cb=application)
 
@@ -148,8 +190,12 @@ if __name__ == '__main__':
     mqtt_client.connect()                           #建立连接
 
     # 订阅主题
-    mqtt_client.subscribe(b"test_sub")              #测试字符串
+    # mqtt_client.subscribe(b"test_sub")              #测试字符串
     mqtt_client.subscribe(b"relay_status")          #接收继电器状态
+    mqtt_client.subscribe(b"relay_timing_on_enable")
+    mqtt_client.subscribe(b"relay_timing_on_time")
+    mqtt_client.subscribe(b"relay_timing_off_enable")
+    mqtt_client.subscribe(b"relay_timing_off_time")
 
 #-----------------------------------------------------------------------------
 
@@ -202,12 +248,28 @@ if __name__ == '__main__':
 
 #-----------------------------------------------------------------------------
 
+        # 检查是否满足定时开启或关闭继电器的条件
+        if g_var.relay_timing_on_enable == True:
+            tmp = time.localtime()
+            hh = tmp[3]
+            mm = tmp[4]
+            if g_var.relay_timing_on_time["hh"] == hh and g_var.relay_timing_on_time["mm"] == mm:
+                g_var.relay_status = True
+                
+        if g_var.relay_timing_off_enable == True:
+            tmp = time.localtime()
+            hh = tmp[3]
+            mm = tmp[4]
+            if g_var.relay_timing_off_time["hh"] == hh and g_var.relay_timing_off_time["mm"] == mm:
+                g_var.relay_status = False
+
+#-----------------------------------------------------------------------------
+
         # 检测到继电器状态变化
         if g_var.relay_status == True:
             relay_port.value(True)
         else:
             relay_port.value(False)
-
 
 #-----------------------------------------------------------------------------
 
@@ -216,28 +278,28 @@ if __name__ == '__main__':
             tmp = time.localtime()
             g_var.utc_timestamp = time.time() + UTC_OFFSET
             g_var.localtime_str = "%04d-%02d-%02d %02d:%02d:%02d" % (tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5])
-            print(g_var.localtime_str)
-            print(g_var.utc_timestamp)
+            # print(g_var.localtime_str)
+            # print(g_var.utc_timestamp)
             last_time_str_update_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 
         # 1秒一次，使用超声波测量距离
-        if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
-            # len, valid = sonar.getlen();
-            g_var.distance_valid = False
-            if g_var.distance_valid:
-                g_var.original_distance = len
-                print("Length is %.1f" % len)
-            else:
-                g_var.original_distance = 999
-                print('Invalid distance.\n')
-            last_measure_sonar_timestamp = time.ticks_ms()
+        # if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
+            # # len, valid = sonar.getlen();
+            # g_var.distance_valid = False
+            # if g_var.distance_valid:
+                # g_var.original_distance = len
+                # print("Length is %.1f" % len)
+            # else:
+                # g_var.original_distance = 999
+                # print('Invalid distance.\n')
+            # last_measure_sonar_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 
-        # 10秒一次,例行向服务器返回一次状态
-        if (time.ticks_ms() - last_mqtt_report_timestamp) > (3000):
+        # 5秒一次,例行向服务器返回一次状态
+        if (time.ticks_ms() - last_mqtt_report_timestamp) > (5000):
 
             # 工作状态
             mqtt_client.publish("alive_status", "on")
@@ -247,6 +309,20 @@ if __name__ == '__main__':
                 mqtt_client.publish("relay_status", "on")
             else:
                 mqtt_client.publish("relay_status", "off")
+                
+            # 继电器定时开启状态
+            if g_var.relay_timing_on_enable == True:
+                mqtt_client.publish("relay_timing_on_enable", "true")
+            else:
+                mqtt_client.publish("relay_timing_on_enable", "false")
+            mqtt_client.publish("relay_timing_on_time", "%02d:%02d" % (g_var.relay_timing_on_time["hh"],g_var.relay_timing_on_time["mm"]))
+            
+            # 继电器定时关闭状态
+            if g_var.relay_timing_off_enable == True:
+                mqtt_client.publish("relay_timing_off_enable", "true")
+            else:
+                mqtt_client.publish("relay_timing_off_enable", "false")
+            mqtt_client.publish("relay_timing_off_time", "%02d:%02d" % (g_var.relay_timing_off_time["hh"],g_var.relay_timing_off_time["mm"]))
 
             # 超声波离地距离 cm
             mqtt_client.publish("distance_to_ground", str(g_var.original_distance))

@@ -19,6 +19,7 @@ from web_pages import application
 from umqtt.simple import MQTTClient
 from hc_sr04 import sr04
 from utils import sync_ntp
+from utils import copy_dict,cmp_dict
 from global_var import g_var
 
 #=============================================================================
@@ -26,17 +27,17 @@ from global_var import g_var
 #=============================================================================
 
 # MQTT服务器的配置状态
-MQTT_HOST = "hairdresser.cloudmqtt.com"
-MQTT_PORT = 16889
-MQTT_ID   = "esp8266"
-MQTT_USER = "wugui"
-MQTT_PWD  = "wugui"
-
-# MQTT_HOST = "dongchenyu163.site"
-# MQTT_PORT = 1883
+# MQTT_HOST = "hairdresser.cloudmqtt.com"
+# MQTT_PORT = 16889
 # MQTT_ID   = "esp8266"
-# MQTT_USER = "zhuzhong"
-# MQTT_PWD  = "159357258"
+# MQTT_USER = "wugui"
+# MQTT_PWD  = "wugui"
+
+MQTT_HOST = "dongchenyu163.site"
+MQTT_PORT = 1883
+MQTT_ID   = "esp8266"
+MQTT_USER = "zhuzhong"
+MQTT_PWD  = "159357258"
 
 # time.time()得到的时间戳，是个什么鬼东西，加偏移才能用
 UTC_OFFSET = 946656000
@@ -49,6 +50,7 @@ UTC_OFFSET = 946656000
 # sta_if = None
 # ap_if = None
 
+# TODO: 发布和订阅的主题，后续要改成不一样，避免订阅到自己发布的消息
 # MQTT 订阅主题列表
 mqtt_sub_topics = [
     "relay_timing_on_enable",
@@ -56,6 +58,9 @@ mqtt_sub_topics = [
     "relay_timing_off_enable",
     "relay_timing_off_time",
     "relay_status"
+    "auto_control_relay",
+    "high_distance",
+    "low_distance"
 ]
 
 # MQTT 发布主题列表
@@ -64,7 +69,11 @@ mqtt_pub_topics = [
     "relay_timing_on_time",
     "relay_timing_off_enable",
     "relay_timing_off_time",
-    "relay_status"
+    "relay_status",
+    "original_distance",
+    "auto_control_relay",
+    "high_distance",
+    "low_distance"
 ]
 
 #=============================================================================
@@ -82,6 +91,9 @@ def mqtt_sub_cb(topic, msg):
     topic = topic.decode()
     msg = msg.decode()
 
+    # 保存当前配置，用于在最后对比
+    mqtt_config = copy_dict(g_var.local_config)
+
     # 订阅测试
     if topic == 'test':
         # pass
@@ -93,13 +105,15 @@ def mqtt_sub_cb(topic, msg):
             g_var.relay_status = True
         else:
             g_var.relay_status = False
-            
+
     # 继电器定时开启状态
     if topic == "relay_timing_on_enable":
         if msg == 'true':
             g_var.relay_timing_on_enable = True
         else:
             g_var.relay_timing_on_enable = False
+        mqtt_config["relay_timing_on_enable"] = g_var.relay_timing_on_enable
+
     if topic == "relay_timing_on_time":
         try:
             on_time = float(msg) #正常应该在0.0 -> 23.9
@@ -107,15 +121,18 @@ def mqtt_sub_cb(topic, msg):
                 g_var.relay_timing_on_time["hh"] = int(on_time)
                 g_var.relay_timing_on_time["mm"] = int((on_time - g_var.relay_timing_on_time["hh"]) * 60)
                 print(g_var.relay_timing_on_time)
+                mqtt_config["relay_timing_on_time"] = copy_dict(g_var.relay_timing_on_time)
         except ValueError:
             pass
-            
+
     # 继电器定时关闭状态
     if topic == "relay_timing_off_enable":
         if msg == 'true':
             g_var.relay_timing_off_enable = True
         else:
             g_var.relay_timing_off_enable = False
+        mqtt_config["relay_timing_off_enable"] = g_var.relay_timing_off_enable
+
     if topic == "relay_timing_off_time":
         try:
             off_time = float(msg) #正常应该在0.0 -> 23.9
@@ -123,6 +140,35 @@ def mqtt_sub_cb(topic, msg):
                 g_var.relay_timing_off_time["hh"] = int(off_time)
                 g_var.relay_timing_off_time["mm"] = int((off_time - g_var.relay_timing_off_time["hh"]) * 60)
                 print(g_var.relay_timing_off_time)
+                mqtt_config["relay_timing_off_time"] = copy_dict(g_var.relay_timing_off_time)
+        except ValueError:
+            pass
+
+    # 根据距离控制继电器的配置参数
+    if topic == "auto_control_relay":
+        if msg == 'true':
+            g_var.auto_control_relay = True
+        else:
+            g_var.auto_control_relay = False
+        mqtt_config["auto_control_relay"] = g_var.auto_control_relay
+
+    if topic == "high_distance":
+        try:
+            high_distance = float(msg) #正常应该在0.0 -> 300
+            if high_distance >= 0 and high_distance <= 300:
+                g_var.high_distance = high_distance
+                print("high_distance %.1f" % g_var.high_distance)
+                mqtt_config["high_distance"] = g_var.high_distance
+        except ValueError:
+            pass
+
+    if topic == "low_distance":
+        try:
+            low_distance = float(msg) #正常应该在0.0 -> 300
+            if low_distance >= 0 and low_distance <= 300:
+                g_var.low_distance = low_distance
+                print("low_distance %.1f" % g_var.low_distance)
+                mqtt_config["low_distance"] = g_var.low_distance
         except ValueError:
             pass
 
@@ -135,6 +181,14 @@ def mqtt_sub_cb(topic, msg):
             # led_green.on()
         # if msg == 'green off':
             # led_green.off()
+
+    # 如果配置被修改，将修改后的配置保存到文件，并同步到本地配置
+    if cmp_dict(mqtt_config, g_var.local_config) == False:
+        with open('config.json', 'w') as fd:
+            json.dump(mqtt_config, fd)
+            print("Successfully saved config:")
+            print(mqtt_config)
+            g_var.local_config = mqtt_config
 
 #=============================================================================
 # Main code start
@@ -152,9 +206,20 @@ if __name__ == '__main__':
         try:
             g_var.local_config = json.load(fd)
         except ValueError:
-            g_var.local_config = g_var.defaul_local_config
+            g_var.local_config = g_var.default_local_config
         except OSError:
-            g_var.local_config = g_var.defaul_local_config
+            g_var.local_config = g_var.default_local_config
+
+#-----------------------------------------------------------------------------
+
+    # TODO: 根据导入的config配置，初始化部分全局变量，可能会Key error
+    g_var.relay_timing_on_enable    = g_var.local_config["relay_timing_on_enable"]
+    g_var.relay_timing_on_time      = copy_dict(g_var.local_config["relay_timing_on_time"])
+    g_var.relay_timing_off_enable   = g_var.local_config["relay_timing_off_enable"]
+    g_var.relay_timing_off_time     = copy_dict(g_var.local_config["relay_timing_off_time"])
+    g_var.auto_control_relay        = g_var.local_config["auto_control_relay"]
+    g_var.high_distance             = g_var.local_config["high_distance"]
+    g_var.low_distance              = g_var.local_config["low_distance"]
 
 #-----------------------------------------------------------------------------
 
@@ -195,6 +260,9 @@ if __name__ == '__main__':
     mqtt_client.subscribe(b"relay_timing_on_time")
     mqtt_client.subscribe(b"relay_timing_off_enable")
     mqtt_client.subscribe(b"relay_timing_off_time")
+    mqtt_client.subscribe(b"auto_control_relay")
+    mqtt_client.subscribe(b"high_distance")
+    mqtt_client.subscribe(b"low_distance")
 
 #-----------------------------------------------------------------------------
 
@@ -248,20 +316,22 @@ if __name__ == '__main__':
 
 #-----------------------------------------------------------------------------
 
-        # 检查是否满足定时开启或关闭继电器的条件
-        if g_var.relay_timing_on_enable == True:
-            tmp = time.localtime()
-            hh = tmp[3]
-            mm = tmp[4]
-            if g_var.relay_timing_on_time["hh"] == hh and g_var.relay_timing_on_time["mm"] == mm:
-                g_var.relay_status = True
-                
-        if g_var.relay_timing_off_enable == True:
-            tmp = time.localtime()
-            hh = tmp[3]
-            mm = tmp[4]
-            if g_var.relay_timing_off_time["hh"] == hh and g_var.relay_timing_off_time["mm"] == mm:
-                g_var.relay_status = False
+        # 只有不是自动模式下，才能使用定时继电器功能
+        if g_var.auto_control_relay == False:
+            # 检查是否满足定时开启或关闭继电器的条件
+            if g_var.relay_timing_on_enable == True:
+                tmp = time.localtime()
+                hh = tmp[3]
+                mm = tmp[4]
+                if g_var.relay_timing_on_time["hh"] == hh and g_var.relay_timing_on_time["mm"] == mm:
+                    g_var.relay_status = True
+
+            if g_var.relay_timing_off_enable == True:
+                tmp = time.localtime()
+                hh = tmp[3]
+                mm = tmp[4]
+                if g_var.relay_timing_off_time["hh"] == hh and g_var.relay_timing_off_time["mm"] == mm:
+                    g_var.relay_status = False
 
 #-----------------------------------------------------------------------------
 
@@ -270,7 +340,7 @@ if __name__ == '__main__':
             relay_port.value(True)
         else:
             relay_port.value(False)
-            
+
 #-----------------------------------------------------------------------------
 
         # 10分钟一次，和ntp服务器同步时间
@@ -292,16 +362,41 @@ if __name__ == '__main__':
 #-----------------------------------------------------------------------------
 
         # 1秒一次，使用超声波测量距离
-        # if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
-            # # len, valid = sonar.getlen();
+        if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
+            len, valid = sonar.getlen();
             # g_var.distance_valid = False
-            # if g_var.distance_valid:
-                # g_var.original_distance = len
-                # print("Length is %.1f" % len)
-            # else:
-                # g_var.original_distance = 999
-                # print('Invalid distance.\n')
-            # last_measure_sonar_timestamp = time.ticks_ms()
+            g_var.distance_valid = valid
+            if g_var.distance_valid:
+                g_var.original_distance = len
+                print("Length is %.1f" % len)
+            else:
+                g_var.original_distance = 999
+                print('Invalid distance.\n')
+            last_measure_sonar_timestamp = time.ticks_ms()
+
+#-----------------------------------------------------------------------------
+
+        # TODO: 20秒一次，滑动平均超声波测距的值
+
+#-----------------------------------------------------------------------------
+
+        # TODO: 使用超声波测距的值，进行继电器的控制，后续会使用平均值
+        if g_var.auto_control_relay == True:
+
+            if g_var.distance_valid == True:
+
+                # 当距离大于高值（水位低）时，关闭继电器
+                # 当距离小于低值（水位高）时，开启继电器
+                # 滞环操作，避免频繁开关水泵
+                if g_var.original_distance > g_var.high_distance:
+                    g_var.relay_status = False
+                elif g_var.original_distance < g_var.low_distance:
+                    g_var.relay_status = True
+
+            else:
+
+                # 如果无法得到距离，关闭继电器
+                g_var.relay_status = False
 
 #-----------------------------------------------------------------------------
 
@@ -316,14 +411,14 @@ if __name__ == '__main__':
                 mqtt_client.publish("relay_status", "on")
             else:
                 mqtt_client.publish("relay_status", "off")
-                
+
             # 继电器定时开启状态
             if g_var.relay_timing_on_enable == True:
                 mqtt_client.publish("relay_timing_on_enable", "true")
             else:
                 mqtt_client.publish("relay_timing_on_enable", "false")
             mqtt_client.publish("relay_timing_on_time", "%02d:%02d" % (g_var.relay_timing_on_time["hh"],g_var.relay_timing_on_time["mm"]))
-            
+
             # 继电器定时关闭状态
             if g_var.relay_timing_off_enable == True:
                 mqtt_client.publish("relay_timing_off_enable", "true")
@@ -332,7 +427,15 @@ if __name__ == '__main__':
             mqtt_client.publish("relay_timing_off_time", "%02d:%02d" % (g_var.relay_timing_off_time["hh"],g_var.relay_timing_off_time["mm"]))
 
             # 超声波离地距离 cm
-            mqtt_client.publish("distance_to_ground", str(g_var.original_distance))
+            mqtt_client.publish("original_distance", str(g_var.original_distance))
+
+            # 自动控制的开关状态和门限距离
+            if g_var.auto_control_relay == True:
+                mqtt_client.publish("auto_control_relay", "true")
+            else:
+                mqtt_client.publish("auto_control_relay", "false")
+            mqtt_client.publish("high_distance", str(g_var.high_distance))
+            mqtt_client.publish("low_distance", str(g_var.low_distance))
 
             last_mqtt_report_timestamp = time.ticks_ms()
 

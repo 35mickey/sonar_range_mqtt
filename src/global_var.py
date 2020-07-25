@@ -27,13 +27,16 @@ class g_var():
     # 继电器状态，开启是True，关闭是False
     relay_status        = False
 
-    # 距离长度cm和状态
+    # 距离长度cm和状态，自动控制的开关和门限距离
     original_distance   = 999
     distance_valid      = False
+    auto_control_relay  = False
+    high_distance       = 999   # 当高于或低于门限时，才操作继电器
+    low_distance        = 0
 
     # 定时开启/关闭继电器使能,及定时时间点
     # 当使能为True时，对比时和分，如果一致，不停开启或关闭继电器
-    # 大概能一致1分钟左右
+    # 大概会使能一致1分钟左右
     relay_timing_on_enable  = False
     relay_timing_on_time    = {
     'hh':00,
@@ -80,7 +83,20 @@ class g_var():
     default_local_config = {
     "wifi_pwd": "11111",
     "wdt_enable": "false",
-    "wifi_ssid": "AAAAA"
+    "wifi_ssid": "AAAAA",
+    "relay_timing_on_enable":False,
+    "relay_timing_on_time": {
+        'hh':00,
+        'mm':00
+        },
+    "relay_timing_off_enable":False,
+    "relay_timing_off_time": {
+        'hh':00,
+        'mm':00
+        },
+    "auto_control_relay":False,
+    "high_distance":999,
+    "low_distance":0
     }
 
 #=============================================================================

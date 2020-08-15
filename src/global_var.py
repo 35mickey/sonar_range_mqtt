@@ -86,13 +86,13 @@ class g_var():
     "wifi_ssid": "AAAAA",
     "relay_timing_on_enable":False,
     "relay_timing_on_time": {
-        'hh':00,
-        'mm':00
+        "hh":00,
+        "mm":00
         },
     "relay_timing_off_enable":False,
     "relay_timing_off_time": {
-        'hh':00,
-        'mm':00
+        "hh":00,
+        "mm":00
         },
     "auto_control_relay":False,
     "high_distance":999,

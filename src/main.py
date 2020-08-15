@@ -42,6 +42,9 @@ MQTT_PWD  = "159357258"
 # time.time()得到的时间戳，是个什么鬼东西，加偏移才能用
 UTC_OFFSET = 946656000
 
+# 原始距离，滑动滤波的深度
+DISTANCE_WINDOW_LPF_WIDTH = 10
+
 #=============================================================================
 # Static Variables
 #=============================================================================
@@ -71,10 +74,17 @@ mqtt_pub_topics = [
     "relay_timing_off_time",
     "relay_status",
     "original_distance",
+    "average_distance",
     "auto_control_relay",
     "high_distance",
     "low_distance"
 ]
+
+# 窗口滤波器列表
+lpf_list = []
+
+# 原始距离的滤波平均值,暂时初始化为999吧
+avg_distance = 999
 
 #=============================================================================
 # Global Variables
@@ -243,7 +253,10 @@ if __name__ == '__main__':
     web = http_server(port=80, ip=http_server_ip, client_num=5, cb=application)
 
     # 同步网络时间
-    sync_ntp()
+    try:
+        sync_ntp()
+    except OSError:
+        print("Sync NTP Error")
 
 #-----------------------------------------------------------------------------
 
@@ -252,6 +265,7 @@ if __name__ == '__main__':
     mqtt_client = MQTTClient(client_id=MQTT_ID, server=MQTT_HOST, port=MQTT_PORT, user=MQTT_USER, password=MQTT_PWD)
     mqtt_client.set_callback(mqtt_sub_cb)           #设置回调函数
     mqtt_client.connect()                           #建立连接
+    print("MQTT broker connected")
 
     # 订阅主题
     # mqtt_client.subscribe(b"test_sub")              #测试字符串
@@ -263,11 +277,13 @@ if __name__ == '__main__':
     mqtt_client.subscribe(b"auto_control_relay")
     mqtt_client.subscribe(b"high_distance")
     mqtt_client.subscribe(b"low_distance")
+    print("MQTT topics subscribed")
 
 #-----------------------------------------------------------------------------
 
     # 超声波测距模块初始化
     sonar = sr04(trig=5,echo=4)
+    print("Sonar initalised")
 
 #-----------------------------------------------------------------------------
 
@@ -284,6 +300,7 @@ if __name__ == '__main__':
         g_var.wdt = WDT()
     if g_var.wdt != None:
         g_var.wdt.feed()
+    print("Watch dog initalised")
 
 #-----------------------------------------------------------------------------
 
@@ -291,6 +308,7 @@ if __name__ == '__main__':
     last_mqtt_report_timestamp      = time.ticks_ms()
     last_led_flash_timestamp        = time.ticks_ms()
     last_measure_sonar_timestamp    = time.ticks_ms()
+    last_average_sonar_timestamp    = time.ticks_ms()
     last_time_str_update_timestamp  = time.ticks_ms()
     last_sync_ntp_timestamp         = time.ticks_ms()
     # last_light_timestamp          = time.ticks_ms()
@@ -312,7 +330,10 @@ if __name__ == '__main__':
 #-----------------------------------------------------------------------------
 
         # 检查有无来自MQTT服务器的消息
-        mqtt_client.check_msg()
+        try:
+            mqtt_client.check_msg()
+        except OSError:
+            print('Can not subscribe, maybe wifi disconnect...')
 
 #-----------------------------------------------------------------------------
 
@@ -345,7 +366,10 @@ if __name__ == '__main__':
 
         # 10分钟一次，和ntp服务器同步时间
         if (time.ticks_ms() - last_sync_ntp_timestamp) > (10*60000):
-            sync_ntp()
+            try:
+                sync_ntp()
+            except OSError:
+                print("Sync NTP Error")
             last_sync_ntp_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
@@ -363,20 +387,37 @@ if __name__ == '__main__':
 
         # 1秒一次，使用超声波测量距离
         if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
-            len, valid = sonar.getlen();
+            distance, valid = sonar.getlen();
             # g_var.distance_valid = False
             g_var.distance_valid = valid
             if g_var.distance_valid:
-                g_var.original_distance = len
-                print("Length is %.1f" % len)
+                g_var.original_distance = distance
+                # print("Length is %.1f" % distance)
+
+                # 当此次采集的数据有效时，将数据填入窗口滤波器
+                if len(lpf_list) >= DISTANCE_WINDOW_LPF_WIDTH:
+                    lpf_list.pop(0)
+                lpf_list.append(g_var.original_distance)
             else:
                 g_var.original_distance = 999
                 print('Invalid distance.\n')
+
             last_measure_sonar_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 
-        # TODO: 20秒一次，滑动平均超声波测距的值
+        # 10秒一次，滑动平均超声波测距的值
+        if (time.ticks_ms() - last_average_sonar_timestamp) > (10*1000):
+
+            sum = 0
+            for value in lpf_list:
+                sum = sum + value
+
+            if sum > 0:
+                avg_distance = sum/len(lpf_list)
+                print("Average distance is %.1fcm" % avg_distance)
+
+            last_average_sonar_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 
@@ -385,12 +426,12 @@ if __name__ == '__main__':
 
             if g_var.distance_valid == True:
 
-                # 当距离大于高值（水位低）时，关闭继电器
-                # 当距离小于低值（水位高）时，开启继电器
+                # 当平均距离大于高值（水位低）时，关闭继电器
+                # 当平均距离小于低值（水位高）时，开启继电器
                 # 滞环操作，避免频繁开关水泵
-                if g_var.original_distance > g_var.high_distance:
+                if avg_distance > g_var.high_distance:
                     g_var.relay_status = False
-                elif g_var.original_distance < g_var.low_distance:
+                elif avg_distance < g_var.low_distance:
                     g_var.relay_status = True
 
             else:
@@ -426,8 +467,11 @@ if __name__ == '__main__':
                 mqtt_client.publish("relay_timing_off_enable", "false")
             mqtt_client.publish("relay_timing_off_time", "%02d:%02d" % (g_var.relay_timing_off_time["hh"],g_var.relay_timing_off_time["mm"]))
 
-            # 超声波离地距离 cm
+            # 超声波离地原始距离 cm
             mqtt_client.publish("original_distance", str(g_var.original_distance))
+
+            # 超声波离地距离平均值 cm
+            mqtt_client.publish("average_distance", str(avg_distance))
 
             # 自动控制的开关状态和门限距离
             if g_var.auto_control_relay == True:
@@ -436,6 +480,8 @@ if __name__ == '__main__':
                 mqtt_client.publish("auto_control_relay", "false")
             mqtt_client.publish("high_distance", str(g_var.high_distance))
             mqtt_client.publish("low_distance", str(g_var.low_distance))
+
+            print('Publish complete.')
 
             last_mqtt_report_timestamp = time.ticks_ms()
 

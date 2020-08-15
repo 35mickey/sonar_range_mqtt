@@ -1,18 +1,18 @@
 {
-    "wifi_pwd": "11111",
+    "wifi_pwd": "12345678",
     "wdt_enable": "false",
-    "wifi_ssid": "AAAAA",
-    "relay_timing_on_enable":False,
+    "wifi_ssid": "monkey",
+    "relay_timing_on_enable": false,
     "relay_timing_on_time": {
-        'hh':00,
-        'mm':00
+        "hh":0,
+        "mm":0
         },
-    "relay_timing_off_enable":False,
+    "relay_timing_off_enable": false,
     "relay_timing_off_time": {
-        'hh':00,
-        'mm':00
+        "hh":0,
+        "mm":0
         },
-    "auto_control_relay":False,
+    "auto_control_relay": false,
     "high_distance":999,
     "low_distance":0
 }

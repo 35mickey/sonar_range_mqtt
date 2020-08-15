@@ -86,6 +86,9 @@ lpf_list = []
 # 原始距离的滤波平均值,暂时初始化为999吧
 avg_distance = 999
 
+# LED闪动的间隔时间
+led_flash_interval_ms = 1000
+
 #=============================================================================
 # Global Variables
 #=============================================================================
@@ -182,16 +185,6 @@ def mqtt_sub_cb(topic, msg):
         except ValueError:
             pass
 
-    # if topic == 'leds':
-        # if msg == 'blue on':
-            # led_blue.on()
-        # if msg == 'blue off':
-            # led_blue.off()
-        # if msg == 'green on':
-            # led_green.on()
-        # if msg == 'green off':
-            # led_green.off()
-
     # 如果配置被修改，将修改后的配置保存到文件，并同步到本地配置
     if cmp_dict(mqtt_config, g_var.local_config) == False:
         with open('config.json', 'w') as fd:
@@ -234,18 +227,12 @@ if __name__ == '__main__':
 #-----------------------------------------------------------------------------
 
     # LED 灯初始化
-    # led_blue    = Pin(13, Pin.OUT, value=0)     # create output pin on GPIO0
-    # led_red     = Pin(15, Pin.OUT, value=0)     # create output pin on GPIO0
-    # led_green   = Pin(12, Pin.OUT, value=0)     # create output pin on GPIO0
     led_flash   = Pin(13, Pin.OUT, value=0)     # create output pin on GPIO13
 
     # 继电器初始化
     relay_port  = Pin(14, Pin.OUT, value=0)     # create output pin on GPIO14
     relay_port.value(False)
     g_var.relay_status = False
-
-    # 光线传感器
-    # light_adc = ADC(0)                          # create ADC object on ADC pin
 
     # http服务器初始化
     http_server_ip = ap_if.ifconfig()[0]
@@ -268,7 +255,6 @@ if __name__ == '__main__':
     print("MQTT broker connected")
 
     # 订阅主题
-    # mqtt_client.subscribe(b"test_sub")              #测试字符串
     mqtt_client.subscribe(b"relay_status")          #接收继电器状态
     mqtt_client.subscribe(b"relay_timing_on_enable")
     mqtt_client.subscribe(b"relay_timing_on_time")
@@ -287,16 +273,10 @@ if __name__ == '__main__':
 
 #-----------------------------------------------------------------------------
 
-    # Get wdt_enable from local_config
-    try:
-        wdt_enable = g_var.local_config['wdt_enable']
-    except KeyError:
-        wdt_enable = 'false'
-
     # 看门狗初始化，在ESP8266上，没法指定超时时间，默认应该是1s吧
     # 使用配置页面进行看门狗的开启和关闭，在修改连接的SSID前，
     # 需要关闭看门狗，否则一修改就重启
-    if wdt_enable == "true":
+    if g_var.local_config['wdt_enable'] == True:
         g_var.wdt = WDT()
     if g_var.wdt != None:
         g_var.wdt.feed()
@@ -311,7 +291,6 @@ if __name__ == '__main__':
     last_average_sonar_timestamp    = time.ticks_ms()
     last_time_str_update_timestamp  = time.ticks_ms()
     last_sync_ntp_timestamp         = time.ticks_ms()
-    # last_light_timestamp          = time.ticks_ms()
 
     # 循环事件检测
     while True:
@@ -322,6 +301,7 @@ if __name__ == '__main__':
 
         # TODO: 后面还是把这个web页面分离吧，用按键激活
         web.wait_request(100)
+        gc.collect()
 
         # http服务完成后，喂狗
         if g_var.wdt != None:
@@ -333,7 +313,8 @@ if __name__ == '__main__':
         try:
             mqtt_client.check_msg()
         except OSError:
-            print('Can not subscribe, maybe wifi disconnect...')
+            # print('Can not subscribe, maybe wifi disconnect...')
+            pass
 
 #-----------------------------------------------------------------------------
 
@@ -366,16 +347,19 @@ if __name__ == '__main__':
 
         # 10分钟一次，和ntp服务器同步时间
         if (time.ticks_ms() - last_sync_ntp_timestamp) > (10*60000):
+
             try:
                 sync_ntp()
             except OSError:
                 print("Sync NTP Error")
+
             last_sync_ntp_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 
         # 1秒一次，把当前时间转为时间字符串
         if (time.ticks_ms() - last_time_str_update_timestamp) > (1000):
+        
             tmp = time.localtime()
             g_var.utc_timestamp = time.time() + UTC_OFFSET
             g_var.localtime_str = "%04d-%02d-%02d %02d:%02d:%02d" % (tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5])
@@ -387,9 +371,11 @@ if __name__ == '__main__':
 
         # 1秒一次，使用超声波测量距离
         if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
+        
             distance, valid = sonar.getlen();
             # g_var.distance_valid = False
             g_var.distance_valid = valid
+            
             if g_var.distance_valid:
                 g_var.original_distance = distance
                 # print("Length is %.1f" % distance)
@@ -398,6 +384,7 @@ if __name__ == '__main__':
                 if len(lpf_list) >= DISTANCE_WINDOW_LPF_WIDTH:
                     lpf_list.pop(0)
                 lpf_list.append(g_var.original_distance)
+
             else:
                 g_var.original_distance = 999
                 print('Invalid distance.\n')
@@ -421,7 +408,7 @@ if __name__ == '__main__':
 
 #-----------------------------------------------------------------------------
 
-        # TODO: 使用超声波测距的值，进行继电器的控制，后续会使用平均值
+        # 使用超声波测距的值，求取平均值，然后进行继电器的控制
         if g_var.auto_control_relay == True:
 
             if g_var.distance_valid == True:
@@ -444,64 +431,62 @@ if __name__ == '__main__':
         # 5秒一次,例行向服务器返回一次状态
         if (time.ticks_ms() - last_mqtt_report_timestamp) > (5000):
 
-            # 工作状态
-            mqtt_client.publish("alive_status", "on")
+            try:
+                # 工作状态
+                mqtt_client.publish("alive_status", "on")
 
-            # 继电器状态
-            if g_var.relay_status == True:
-                mqtt_client.publish("relay_status", "on")
-            else:
-                mqtt_client.publish("relay_status", "off")
+                # 继电器状态
+                if g_var.relay_status == True:
+                    mqtt_client.publish("relay_status", "on")
+                else:
+                    mqtt_client.publish("relay_status", "off")
 
-            # 继电器定时开启状态
-            if g_var.relay_timing_on_enable == True:
-                mqtt_client.publish("relay_timing_on_enable", "true")
-            else:
-                mqtt_client.publish("relay_timing_on_enable", "false")
-            mqtt_client.publish("relay_timing_on_time", "%02d:%02d" % (g_var.relay_timing_on_time["hh"],g_var.relay_timing_on_time["mm"]))
+                if g_var.auto_control_relay == True:
 
-            # 继电器定时关闭状态
-            if g_var.relay_timing_off_enable == True:
-                mqtt_client.publish("relay_timing_off_enable", "true")
-            else:
-                mqtt_client.publish("relay_timing_off_enable", "false")
-            mqtt_client.publish("relay_timing_off_time", "%02d:%02d" % (g_var.relay_timing_off_time["hh"],g_var.relay_timing_off_time["mm"]))
+                    # 超声波离地原始距离 cm
+                    mqtt_client.publish("original_distance", str(g_var.original_distance))
 
-            # 超声波离地原始距离 cm
-            mqtt_client.publish("original_distance", str(g_var.original_distance))
+                    # 超声波离地距离平均值 cm, 不发送初始值999
+                    if avg_distance != 999:
+                        mqtt_client.publish("average_distance", str(avg_distance))
 
-            # 超声波离地距离平均值 cm
-            mqtt_client.publish("average_distance", str(avg_distance))
+                    # 自动控制的开关状态和门限距离
+                    if g_var.auto_control_relay == True:
+                        mqtt_client.publish("auto_control_relay", "true")
+                    else:
+                        mqtt_client.publish("auto_control_relay", "false")
+                    mqtt_client.publish("high_distance", str(g_var.high_distance))
+                    mqtt_client.publish("low_distance", str(g_var.low_distance))
 
-            # 自动控制的开关状态和门限距离
-            if g_var.auto_control_relay == True:
-                mqtt_client.publish("auto_control_relay", "true")
-            else:
-                mqtt_client.publish("auto_control_relay", "false")
-            mqtt_client.publish("high_distance", str(g_var.high_distance))
-            mqtt_client.publish("low_distance", str(g_var.low_distance))
+                else:
 
-            print('Publish complete.')
+                    # 继电器定时开启状态
+                    if g_var.relay_timing_on_enable == True:
+                        mqtt_client.publish("relay_timing_on_enable", "true")
+                    else:
+                        mqtt_client.publish("relay_timing_on_enable", "false")
+                    mqtt_client.publish("relay_timing_on_time", "%02d:%02d" % (g_var.relay_timing_on_time["hh"],g_var.relay_timing_on_time["mm"]))
+
+                    # 继电器定时关闭状态
+                    if g_var.relay_timing_off_enable == True:
+                        mqtt_client.publish("relay_timing_off_enable", "true")
+                    else:
+                        mqtt_client.publish("relay_timing_off_enable", "false")
+                    mqtt_client.publish("relay_timing_off_time", "%02d:%02d" % (g_var.relay_timing_off_time["hh"],g_var.relay_timing_off_time["mm"]))
+
+                print('Publish complete.')
+
+            except OSError:
+                print('Can not publish, maybe wifi disconnect...')
+                # 闪快一点，代表没网了
+                led_flash_interval_ms = 200
 
             last_mqtt_report_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 
         # 1秒一次，闪一下指示灯
-        if (time.ticks_ms() - last_led_flash_timestamp) > (500):
+        if (time.ticks_ms() - last_led_flash_timestamp) > (led_flash_interval_ms):
             led_flash.value(not led_flash.value())
             last_led_flash_timestamp = time.ticks_ms()
             gc.collect()
-
-#-----------------------------------------------------------------------------
-
-        # 三秒钟上报一次光线传感器数据
-        # if (time.ticks_ms() - last_light_timestamp) > (3 * 1000):
-            # adc_value = light_adc.read()
-            # print('ADC: %d' % adc_value)
-            # mqtt_client.publish(topic='light', msg=('%d' % adc_value))
-            # led_red.value(not led_red.value())
-            # last_light_timestamp = time.ticks_ms()
-            # gc.collect()
-
-

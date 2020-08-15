@@ -82,7 +82,7 @@ class g_var():
     # 缺省配置
     default_local_config = {
     "wifi_pwd": "11111",
-    "wdt_enable": "false",
+    "wdt_enable": False,
     "wifi_ssid": "AAAAA",
     "relay_timing_on_enable":False,
     "relay_timing_on_time": {

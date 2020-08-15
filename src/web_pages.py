@@ -192,10 +192,10 @@ def control_html(req):
         with open('config.json', 'w') as fd:
             try:
                 if 'wdt_enable' in req.form.keys():
-                    g_var.local_config['wdt_enable'] = req.form['wdt_enable']
+                    g_var.local_config['wdt_enable'] = True
                     # g_var.wdt = True  # 此处只做配置，等待下次重启生效
                 else:
-                    g_var.local_config['wdt_enable'] = "false"
+                    g_var.local_config['wdt_enable'] = False
                     # g_var.wdt = None
                 # print(config_table)
                 json.dump(g_var.local_config, fd)
@@ -222,10 +222,10 @@ def control_html(req):
     body = control_html
 
     # 返回看门狗的状态
-    if g_var.local_config['wdt_enable'] == "true":
-        body = body.replace('{{ wdt_status }}', 'checked="true"')
+    if g_var.local_config['wdt_enable'] == True:
+        body = body.replace('{{ wdt_check_status }}', 'checked="true"')
     else:
-        body = body.replace('{{ wdt_status }}', '')
+        body = body.replace('{{ wdt_check_status }}', '')
 
     # 返回继电器的状态
     if g_var.relay_status == True:
@@ -234,35 +234,6 @@ def control_html(req):
         body = body.replace('{{ relay_check_status }}', '')
 
     return body, '200'
-
-#=============================================================================
-
-# 登录页面，仅供测试
-def signin_html(req):
-    if req.method == 'GET':
-        body = '''<form action="/signin" method="post">
-          <p><input name="username"></p>
-          <p><input name="password" type="password"></p>
-          <p><button type="submit">Sign In</button></p>
-          </form>'''
-        return body, '200'
-    elif req.method == 'POST':
-        username = req.form['username']
-        password = req.form['password']
-        if username=='admin' and password=='123456':
-            body = '''<h1>Welcome login, %s!</h1>''' % username
-        else:
-            body = '''<form action="/signin" method="post">
-                <h1>Bad username or password!</h1>
-                <p><input name="username"></p>
-                <p><input name="password" type="password"></p>
-                <p><button type="submit">Sign In</button></p>
-                </form>'''
-        return body, '200'
-    else:
-        body = 'Bad request!'
-
-    return body, '500'
 
 #=============================================================================
 
@@ -280,7 +251,6 @@ path_dict = {
     '/': home_html,
     '/ssid': wifi_html,
     '/control': control_html,
-    '/signin': signin_html,
 }
 
 # 参数解析及html生成，通常作为回调函数

@@ -1,7 +1,7 @@
 {
-    "wifi_pwd": "12345678",
-    "wdt_enable": "false",
-    "wifi_ssid": "monkey",
+    "wifi_pwd": "meiyoumima",
+    "wdt_enable": false,
+    "wifi_ssid": "YangDeBiao",
     "relay_timing_on_enable": false,
     "relay_timing_on_time": {
         "hh":0,

@@ -26,7 +26,7 @@ from global_var import g_var
 # Definitions
 #=============================================================================
 
-# MQTT服务器的配置状态
+# MQTT服务器的配置参数
 # MQTT_HOST = "hairdresser.cloudmqtt.com"
 # MQTT_PORT = 16889
 # MQTT_ID   = "esp8266"
@@ -38,6 +38,12 @@ MQTT_PORT = 1883
 MQTT_ID   = "esp8266"
 MQTT_USER = "zhuzhong"
 MQTT_PWD  = "159357258"
+
+# MQTT连接状态
+MQTT_STATE_CONNECTED    = 0
+MQTT_STATE_DISCONNECTED = 1
+
+MQTT_STATE_NUMS         = 2
 
 # time.time()得到的时间戳，是个什么鬼东西，加偏移才能用
 UTC_OFFSET = 946656000
@@ -89,6 +95,9 @@ avg_distance = 999
 # LED闪动的间隔时间
 led_flash_interval_ms = 1000
 
+# MQTT服务器的当前状态
+mqtt_current_state = MQTT_STATE_DISCONNECTED
+
 #=============================================================================
 # Global Variables
 #=============================================================================
@@ -96,6 +105,24 @@ led_flash_interval_ms = 1000
 #=============================================================================
 # Function Definitions
 #=============================================================================
+
+# MQTT订阅的初始化函数，订阅list中的全部主题
+# in  : 主题列表
+# out : 成功 - True , 失败 - False
+def mqtt_sub_init():
+    try:
+        mqtt_client.subscribe(b"relay_status")              #接收继电器状态
+        mqtt_client.subscribe(b"relay_timing_on_enable")
+        mqtt_client.subscribe(b"relay_timing_on_time")
+        mqtt_client.subscribe(b"relay_timing_off_enable")
+        mqtt_client.subscribe(b"relay_timing_off_time")
+        mqtt_client.subscribe(b"auto_control_relay")
+        mqtt_client.subscribe(b"high_distance")
+        mqtt_client.subscribe(b"low_distance")
+        return True
+
+    except OSError:
+        return False
 
 # MQTT订阅的回调函数，收到服务器消息后会调用这个函数
 # in  : 主题，消息
@@ -247,23 +274,26 @@ if __name__ == '__main__':
 
 #-----------------------------------------------------------------------------
 
-    # MQTT客户端初始
+    # MQTT客户端初始化
     # 建立一个MQTT客户端
     mqtt_client = MQTTClient(client_id=MQTT_ID, server=MQTT_HOST, port=MQTT_PORT, user=MQTT_USER, password=MQTT_PWD)
     mqtt_client.set_callback(mqtt_sub_cb)           #设置回调函数
-    mqtt_client.connect()                           #建立连接
-    print("MQTT broker connected")
+    print("MQTT broker connecting...")
+    try:
+        mqtt_client.connect()                       #建立连接
+        mqtt_current_state = MQTT_STATE_CONNECTED
+        print("MQTT broker connected")
+    except OSError:
+        mqtt_current_state = MQTT_STATE_DISCONNECTED
+        print("MQTT broker NOT connected")
 
     # 订阅主题
-    mqtt_client.subscribe(b"relay_status")          #接收继电器状态
-    mqtt_client.subscribe(b"relay_timing_on_enable")
-    mqtt_client.subscribe(b"relay_timing_on_time")
-    mqtt_client.subscribe(b"relay_timing_off_enable")
-    mqtt_client.subscribe(b"relay_timing_off_time")
-    mqtt_client.subscribe(b"auto_control_relay")
-    mqtt_client.subscribe(b"high_distance")
-    mqtt_client.subscribe(b"low_distance")
-    print("MQTT topics subscribed")
+    if mqtt_current_state == MQTT_STATE_CONNECTED:
+        if mqtt_sub_init() == True:
+            print("MQTT topics subscribed successfully!")
+        else:
+            mqtt_current_state = MQTT_STATE_DISCONNECTED
+            print("MQTT topics subscribed failed, timeout!")
 
 #-----------------------------------------------------------------------------
 
@@ -291,6 +321,7 @@ if __name__ == '__main__':
     last_average_sonar_timestamp    = time.ticks_ms()
     last_time_str_update_timestamp  = time.ticks_ms()
     last_sync_ntp_timestamp         = time.ticks_ms()
+    last_mqtt_connect_timestamp     = time.ticks_ms()
 
     # 循环事件检测
     while True:
@@ -314,7 +345,7 @@ if __name__ == '__main__':
             mqtt_client.check_msg()
         except OSError:
             # print('Can not subscribe, maybe wifi disconnect...')
-            pass
+            mqtt_current_state = MQTT_STATE_DISCONNECTED
 
 #-----------------------------------------------------------------------------
 
@@ -359,7 +390,7 @@ if __name__ == '__main__':
 
         # 1秒一次，把当前时间转为时间字符串
         if (time.ticks_ms() - last_time_str_update_timestamp) > (1000):
-        
+
             tmp = time.localtime()
             g_var.utc_timestamp = time.time() + UTC_OFFSET
             g_var.localtime_str = "%04d-%02d-%02d %02d:%02d:%02d" % (tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5])
@@ -371,11 +402,11 @@ if __name__ == '__main__':
 
         # 1秒一次，使用超声波测量距离
         if (time.ticks_ms() - last_measure_sonar_timestamp) > (1000):
-        
+
             distance, valid = sonar.getlen();
             # g_var.distance_valid = False
             g_var.distance_valid = valid
-            
+
             if g_var.distance_valid:
                 g_var.original_distance = distance
                 # print("Length is %.1f" % distance)
@@ -478,10 +509,43 @@ if __name__ == '__main__':
 
             except OSError:
                 print('Can not publish, maybe wifi disconnect...')
+                mqtt_current_state = MQTT_STATE_DISCONNECTED
                 # 闪快一点，代表没网了
                 led_flash_interval_ms = 200
 
             last_mqtt_report_timestamp = time.ticks_ms()
+
+#-----------------------------------------------------------------------------
+
+        # 1分钟一次，如果mqtt服务断开, 尝试重新连接
+        if mqtt_current_state == MQTT_STATE_DISCONNECTED:
+            if (time.ticks_ms() - last_mqtt_connect_timestamp) > (1*60000):
+
+                # 断开当前的MQTT，防止一些特殊情况
+                try:
+                    mqtt_client.disconnect()
+                except OSError:
+                    pass # 先这么放着吧。。。
+
+                # 尝试重新连接
+                print("MQTT broker connecting...")
+                try:
+                    mqtt_client.connect()                       #建立连接
+                    mqtt_current_state = MQTT_STATE_CONNECTED
+                    print("MQTT broker connected")
+                except OSError:
+                    mqtt_current_state = MQTT_STATE_DISCONNECTED
+                    print("MQTT broker NOT connected")
+
+                # 订阅主题
+                if mqtt_current_state == MQTT_STATE_CONNECTED:
+                    if mqtt_sub_init() == True:
+                        print("MQTT topics subscribed successfully!")
+                    else:
+                        mqtt_current_state = MQTT_STATE_DISCONNECTED
+                        print("MQTT topics subscribed failed, timeout!")
+
+                last_mqtt_connect_timestamp = time.ticks_ms()
 
 #-----------------------------------------------------------------------------
 

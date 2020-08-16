@@ -151,6 +151,7 @@ class MQTTClient:
         self._send_str(topic)
         self.sock.write(qos.to_bytes(1, "little"))
         while 1:
+            self.sock.settimeout(0.5)
             op = self.wait_msg()
             if op == 0x90:
                 resp = self.sock.read(4)
@@ -159,6 +160,8 @@ class MQTTClient:
                 if resp[3] == 0x80:
                     raise MQTTException(resp[3])
                 return
+            else:
+                raise OSError(-1)
 
     # Wait for a single incoming MQTT message and process it.
     # Subscribed messages are delivered to a callback previously

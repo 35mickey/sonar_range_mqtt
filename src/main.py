@@ -14,8 +14,8 @@ from machine import ADC
 from machine import WDT
 import gc
 import network
-from web_server import http_server
-from web_pages import application
+#from web_server import http_server
+#from web_pages import application
 from umqtt.simple import MQTTClient
 from hc_sr04 import sr04
 from utils import sync_ntp
@@ -93,7 +93,7 @@ lpf_list = []
 avg_distance = 999
 
 # LED闪动的间隔时间
-led_flash_interval_ms = 1000
+led_flash_interval_ms = 500
 
 # MQTT服务器的当前状态
 mqtt_current_state = MQTT_STATE_DISCONNECTED
@@ -262,9 +262,9 @@ if __name__ == '__main__':
     g_var.relay_status = False
 
     # http服务器初始化
-    http_server_ip = ap_if.ifconfig()[0]
-    print(http_server_ip)
-    web = http_server(port=80, ip=http_server_ip, client_num=5, cb=application)
+#    http_server_ip = ap_if.ifconfig()[0]
+#    print(http_server_ip)
+#    web = http_server(port=80, ip=http_server_ip, client_num=5, cb=application)
 
     # 同步网络时间
     try:
@@ -331,7 +331,8 @@ if __name__ == '__main__':
             g_var.wdt.feed()
 
         # TODO: 后面还是把这个web页面分离吧，用按键激活
-        web.wait_request(100)
+#        web.wait_request(100)
+        time.sleep_ms(10)
         gc.collect()
 
         # http服务完成后，喂狗
@@ -351,20 +352,55 @@ if __name__ == '__main__':
 
         # 只有不是自动模式下，才能使用定时继电器功能
         if g_var.auto_control_relay == False:
-            # 检查是否满足定时开启或关闭继电器的条件
-            if g_var.relay_timing_on_enable == True:
-                tmp = time.localtime()
-                hh = tmp[3]
-                mm = tmp[4]
-                if g_var.relay_timing_on_time["hh"] == hh and g_var.relay_timing_on_time["mm"] == mm:
-                    g_var.relay_status = True
 
-            if g_var.relay_timing_off_enable == True:
-                tmp = time.localtime()
-                hh = tmp[3]
-                mm = tmp[4]
-                if g_var.relay_timing_off_time["hh"] == hh and g_var.relay_timing_off_time["mm"] == mm:
-                    g_var.relay_status = False
+            # 获取当前时间，这个函数应该很快的
+            tmp = time.localtime()
+            hh = tmp[3]
+            mm = tmp[4]
+
+            # 如果开启和关闭使能都开启，根据时间范围控制继电器，否则到点修改
+            # 因为如果到点修改，8266重启后，就会丢失开启的状态
+            if g_var.relay_timing_on_enable == True and g_var.relay_timing_off_enable == True:
+
+                # 保存当前，开启和关闭的时间各自到一个整数（分钟），方便对比
+                current_time    = hh*60 + mm
+                on_time         = g_var.relay_timing_on_time["hh"]*60 + g_var.relay_timing_on_time["mm"]
+                off_time        = g_var.relay_timing_off_time["hh"]*60 + g_var.relay_timing_off_time["mm"]
+
+                # 开启状态不跨0点
+                if ( off_time >= on_time ):
+
+                    if ( current_time >= on_time and current_time < off_time ):
+
+                        g_var.relay_status = True
+
+                    else:
+
+                        g_var.relay_status = False
+
+                # 开启状态跨0点
+                else:
+
+                    if ( current_time >= on_time or current_time < off_time ):
+
+                        g_var.relay_status = True
+
+                    else:
+
+                        g_var.relay_status = False
+
+            else:
+
+                # 检查是否满足定时开启或关闭继电器的条件
+                if g_var.relay_timing_on_enable == True:
+                    if g_var.relay_timing_on_time["hh"] == hh and g_var.relay_timing_on_time["mm"] == mm:
+
+                        g_var.relay_status = True
+
+                if g_var.relay_timing_off_enable == True:
+                    if g_var.relay_timing_off_time["hh"] == hh and g_var.relay_timing_off_time["mm"] == mm:
+
+                        g_var.relay_status = False
 
 #-----------------------------------------------------------------------------
 
@@ -496,14 +532,14 @@ if __name__ == '__main__':
                         mqtt_client.publish("relay_timing_on_enable", "true")
                     else:
                         mqtt_client.publish("relay_timing_on_enable", "false")
-                    mqtt_client.publish("relay_timing_on_time", "%02d:%02d" % (g_var.relay_timing_on_time["hh"],g_var.relay_timing_on_time["mm"]))
+                    mqtt_client.publish("relay_timing_on_time", "%.1f" % (g_var.relay_timing_on_time["hh"]+g_var.relay_timing_on_time["mm"]/60))
 
                     # 继电器定时关闭状态
                     if g_var.relay_timing_off_enable == True:
                         mqtt_client.publish("relay_timing_off_enable", "true")
                     else:
                         mqtt_client.publish("relay_timing_off_enable", "false")
-                    mqtt_client.publish("relay_timing_off_time", "%02d:%02d" % (g_var.relay_timing_off_time["hh"],g_var.relay_timing_off_time["mm"]))
+                    mqtt_client.publish("relay_timing_off_time", "%.1f" % (g_var.relay_timing_off_time["hh"]+g_var.relay_timing_off_time["mm"]/60))
 
                 print('Publish complete.')
 

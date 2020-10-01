@@ -342,11 +342,12 @@ if __name__ == '__main__':
 #-----------------------------------------------------------------------------
 
         # 检查有无来自MQTT服务器的消息
-        try:
-            mqtt_client.check_msg()
-        except OSError:
-            # print('Can not subscribe, maybe wifi disconnect...')
-            mqtt_current_state = MQTT_STATE_DISCONNECTED
+        if mqtt_current_state == MQTT_STATE_CONNECTED:
+            try:
+                mqtt_client.check_msg()
+            except OSError:
+                # print('Can not subscribe, maybe wifi disconnect...')
+                mqtt_current_state = MQTT_STATE_DISCONNECTED
 
 #-----------------------------------------------------------------------------
 
@@ -496,6 +497,7 @@ if __name__ == '__main__':
 #-----------------------------------------------------------------------------
 
         # 5秒一次,例行向服务器返回一次状态
+        # TODO: 仅在正常连接时，才进行发布
         if (time.ticks_ms() - last_mqtt_report_timestamp) > (5000):
 
             try:
@@ -508,6 +510,12 @@ if __name__ == '__main__':
                 else:
                     mqtt_client.publish("relay_status", "off")
 
+                # 自动控制的开关状态和门限距离
+                if g_var.auto_control_relay == True:
+                    mqtt_client.publish("auto_control_relay", "true")
+                else:
+                    mqtt_client.publish("auto_control_relay", "false")
+
                 if g_var.auto_control_relay == True:
 
                     # 超声波离地原始距离 cm
@@ -517,11 +525,6 @@ if __name__ == '__main__':
                     if avg_distance != 999:
                         mqtt_client.publish("average_distance", str(avg_distance))
 
-                    # 自动控制的开关状态和门限距离
-                    if g_var.auto_control_relay == True:
-                        mqtt_client.publish("auto_control_relay", "true")
-                    else:
-                        mqtt_client.publish("auto_control_relay", "false")
                     mqtt_client.publish("high_distance", str(g_var.high_distance))
                     mqtt_client.publish("low_distance", str(g_var.low_distance))
 

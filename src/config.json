@@ -2,17 +2,17 @@
     "wdt_enable": false,
     "wifi_ssid": "266",
     "wifi_pwd": "nbvc5x2z",
-    "relay_timing_on_enable": false,
+    "relay_timing_on_enable": true,
     "relay_timing_on_time": {
         "hh":0,
         "mm":0
         },
-    "relay_timing_off_enable": false,
+    "relay_timing_off_enable": true,
     "relay_timing_off_time": {
         "hh":0,
         "mm":0
         },
-    "auto_control_relay": false,
+    "auto_control_relay": true,
     "high_distance":999,
     "low_distance":0
 }

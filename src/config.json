@@ -1,5 +1,5 @@
 {
-    "wdt_enable": false,
+    "wdt_enable": true,
     "wifi_ssid": "266",
     "wifi_pwd": "nbvc5x2z",
     "relay_timing_on_enable": true,
